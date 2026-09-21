@@ -54,7 +54,7 @@ function normalizeKey(key: string): string | null {
 
 function domEventName(el: HTMLElement, key: string): string {
   if (key === "onChange") {
-    if (el.tagName === "INPUT" && !CHANGE_AS_INPUT_TYPES.has(el.getAttribute("type") ?? "")) {
+    if (el.tagName === "INPUT" && !CHANGE_AS_INPUT_TYPES.has(inputType(el))) {
       return "input";
     }
     if (el.tagName === "TEXTAREA") return "input";
@@ -85,20 +85,23 @@ function isFormControlled(el: HTMLElement): boolean {
   return el.tagName === "INPUT" || el.tagName === "TEXTAREA" || el.tagName === "SELECT";
 }
 
+function inputType(el: HTMLElement): string {
+  return el.getAttribute("type") ?? "";
+}
+
 function controlsValue(el: HTMLElement): boolean {
   if (el.tagName === "TEXTAREA" || el.tagName === "SELECT") return true;
-  return !CHANGE_AS_INPUT_TYPES.has(el.getAttribute("type") ?? "");
+  return !CHANGE_AS_INPUT_TYPES.has(inputType(el));
 }
 
 function controlsChecked(el: HTMLElement): boolean {
-  return el.tagName === "INPUT" && CHANGE_AS_INPUT_TYPES.has(el.getAttribute("type") ?? "") && el.getAttribute("type") !== "file";
+  return el.tagName === "INPUT" && inputType(el) !== "file" && CHANGE_AS_INPUT_TYPES.has(inputType(el));
 }
 
 function setupControlled(el: HTMLElement, props: Props): void {
   if (!isFormControlled(el)) return;
   const value = props.value;
   const checked = props.checked;
-  if (value instanceof Signal && checked instanceof Signal) return;
   const next: ControlledState = { hasChange: props.onChange != null, warned: false };
   let tracked = false;
   if (!(value instanceof Signal) && value != null && controlsValue(el)) {
