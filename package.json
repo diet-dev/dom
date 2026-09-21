@@ -1,22 +1,57 @@
 {
-  "name": "dom",
-  "private": true,
-  "version": "0.0.0",
+  "name": "@dietdev/dom",
+  "version": "0.1.0",
+  "description": "Построение DOM из TypeScript: фабрики тегов, реактивность на сигналах, keyed-списки",
+  "keywords": [
+    "dom",
+    "html",
+    "hyperscript",
+    "signals",
+    "reactive",
+    "keyed-list",
+    "no-vdom",
+    "typescript"
+  ],
+  "author": "dietdev <dietdev.tech@gmail.com>",
   "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
-    "preview": "vite preview",
     "test": "vitest run",
-    "test:watch": "vitest"
-  },
-  "devDependencies": {
-    "jsdom": "^29.1.1",
-    "typescript": "~6.0.2",
-    "vite": "^8.3.0",
-    "vitest": "^5.0.1"
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "build": "rm -rf dist && tsc -p tsconfig.build.json",
+    "build:demo": "vite build",
+    "preview": "vite preview",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "prepublishOnly": "npm run typecheck && npm test && npm run build"
   },
   "dependencies": {
     "@preact/signals-core": "^1.14.4"
+  },
+  "devDependencies": {
+    "jsdom": "^29.1.1",
+    "prettier": "^3.9.8",
+    "typescript": "~6.0.2",
+    "vite": "^8.3.0",
+    "vitest": "^5.0.1"
   }
 }
