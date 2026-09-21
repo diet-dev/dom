@@ -6,11 +6,26 @@ export type Child = string | number | Node | Signal<unknown> | ListView<any> | C
 
 export type Props = {
   [key: string]: unknown;
+  key?: unknown;
   class?: string | (string | false | null | undefined)[] | Signal<string | null>;
+  className?: string | (string | false | null | undefined)[] | Signal<string | null>;
+  htmlFor?: string;
   style?: string | Partial<CSSStyleDeclaration>;
   dataset?: Record<string, string> | Signal<Record<string, string> | null>;
-  ref?: (el: HTMLElement) => void;
+  ref?: ((el: HTMLElement) => void) | { current: HTMLElement | null };
 } & { [K in `on${string}`]?: EventListener };
+
+const PROP_NAMES: Record<string, string> = {
+  className: "class",
+  htmlFor: "for",
+  autoFocus: "autofocus",
+};
+
+const EVENT_NAMES: Record<string, string> = {
+  onDoubleClick: "dblclick",
+};
+
+const CHANGE_AS_INPUT_TYPES = new Set(["checkbox", "radio", "file"]);
 
 const BOOLEAN_PROPS = new Set([
   "disabled",
@@ -19,9 +34,25 @@ const BOOLEAN_PROPS = new Set([
   "required",
   "selected",
   "multiple",
-  "autofocus",
   "hidden",
+  "autofocus",
 ]);
+
+function normalizeKey(key: string): string | null {
+  if (key === "key") return null;
+  return PROP_NAMES[key] ?? key;
+}
+
+function domEventName(el: HTMLElement, key: string): string {
+  if (key === "onChange") {
+    if (el.tagName === "INPUT" && !CHANGE_AS_INPUT_TYPES.has(el.getAttribute("type") ?? "")) {
+      return "input";
+    }
+    if (el.tagName === "TEXTAREA") return "input";
+    return "change";
+  }
+  return EVENT_NAMES[key] ?? key.slice(2).toLowerCase();
+}
 
 export function h(tag: string, props?: Props | null, ...children: Child[]): HTMLElement {
   const el = document.createElement(tag);
@@ -31,19 +62,27 @@ export function h(tag: string, props?: Props | null, ...children: Child[]): HTML
 }
 
 export function applyProps(el: HTMLElement, props: Props): void {
-  for (const [key, value] of Object.entries(props)) {
+  const entries = Object.entries(props);
+  const typeIndex = entries.findIndex(([key]) => key === "type");
+  if (typeIndex > 0) entries.unshift(...entries.splice(typeIndex, 1));
+  for (const [key, value] of entries) {
     if (value instanceof Signal) bind(el, () => applyProp(el, key, value.value));
     else if (value != null) applyProp(el, key, value);
   }
 }
 
-export function applyProp(el: HTMLElement, key: string, value: unknown): void {
+export function applyProp(el: HTMLElement, rawKey: string, value: unknown): void {
+  const key = normalizeKey(rawKey);
+  if (key == null) return;
   if (value == null) {
     clearProp(el, key);
     return;
   }
-  if (key === "ref" && typeof value === "function") {
-    value(el);
+  if (key === "ref") {
+    if (typeof value === "function") value(el);
+    else if (value && typeof value === "object" && "current" in value) {
+      (value as { current: HTMLElement | null }).current = el;
+    }
     return;
   }
   if (key === "class") {
@@ -59,7 +98,7 @@ export function applyProp(el: HTMLElement, key: string, value: unknown): void {
     return;
   }
   if (key.startsWith("on") && typeof value === "function") {
-    el.addEventListener(key.slice(2).toLowerCase(), value as EventListener);
+    el.addEventListener(domEventName(el, key), value as EventListener);
     return;
   }
   if (key === "value") {
@@ -73,7 +112,9 @@ export function applyProp(el: HTMLElement, key: string, value: unknown): void {
   el.setAttribute(key, String(value));
 }
 
-function clearProp(el: HTMLElement, key: string): void {
+function clearProp(el: HTMLElement, rawKey: string): void {
+  const key = normalizeKey(rawKey);
+  if (key == null) return;
   if (key === "class") {
     el.className = "";
     return;

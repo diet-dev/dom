@@ -7,10 +7,10 @@ Blocked by: 01
 
 ## Acceptance
 
-- [ ] `className` → `class`, `htmlFor` → `for`, `key` игнорируется (не становится атрибутом)
-- [ ] `onDoubleClick` → событие `dblclick`
-- [ ] `onChange`: текстовый/числовой `input` и `textarea` → событие `input`; `select` и `input[type=checkbox|radio|file]` → событие `change`
-- [ ] Таблица «React-имя → DOM-свойство» заменяет lowercase-набор: `readOnly` → `readOnly`, `autoFocus` → `autofocus`, остальные булевы (`disabled`/`checked`/`required`/`selected`/`multiple`/`hidden`) — как прежде
-- [ ] `ref` принимает callback `(el) => void` и объект `{ current }`
-- [ ] Прочие React-события (`onMouseEnter`, `onKeyDown`, `onSubmit`, `onFocus`, `onBlur`) лоуэрятся в корректный DOM-тип
-- [ ] Гейт `npm run typecheck && npm test` зелёный (существующие тесты адаптированы к новому контракту)
+- [x] `className` → `class`, `htmlFor` → `for`, `key` игнорируется (не становится атрибутом)
+- [x] `onDoubleClick` → событие `dblclick`
+- [x] `onChange`: текстовый/числовой `input` и `textarea` → событие `input`; `select` и `input[type=checkbox|radio|file]` → событие `change`
+- [x] Таблица «React-имя → DOM-свойство» заменяет lowercase-набор: `readOnly` → `readOnly`, `autoFocus` → `autofocus`, остальные булевы (`disabled`/`checked`/`required`/`selected`/`multiple`/`hidden`) — как прежде
+- [x] `ref` принимает callback `(el) => void` и объект `{ current }`
+- [x] Прочие React-события (`onMouseEnter`, `onKeyDown`, `onSubmit`, `onFocus`, `onBlur`) лоуэрятся в корректный DOM-тип
+- [x] Гейт `npm run typecheck && npm test` зелёный (существующие тесты адаптированы к новому контракту)

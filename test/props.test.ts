@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { signal } from "../src/signals.ts";
-import { div, input, button, select, option } from "../src/tags.ts";
+import { div, input, button, select, option, textarea, label } from "../src/tags.ts";
 
 describe("пропсы", () => {
   it("class: строка", () => {
@@ -74,6 +74,113 @@ describe("пропсы", () => {
   it("value у select применяется после монтирования детей", () => {
     const node = select({ value: "b" }, option({ value: "a" }, "a"), option({ value: "b" }, "b"));
     expect((node as HTMLSelectElement).value).toBe("b");
+  });
+
+  describe("React-контракт имён", () => {
+    it("className → class", () => {
+      expect(div({ className: "a b" }).className).toBe("a b");
+    });
+
+    it("htmlFor → for", () => {
+      expect(label({ htmlFor: "name" }).getAttribute("for")).toBe("name");
+    });
+
+    it("key игнорируется и не становится атрибутом", () => {
+      const node = div({ key: "1", class: "a" });
+      expect(node.getAttribute("key")).toBeNull();
+      expect(node.hasAttribute("key")).toBe(false);
+    });
+
+    it("onDoubleClick → dblclick", () => {
+      let fired = 0;
+      const node = button({ onDoubleClick: () => fired++ });
+      node.dispatchEvent(new MouseEvent("dblclick", { bubbles: true }));
+      expect(fired).toBe(1);
+    });
+
+    it("onChange у текстового input → событие input", () => {
+      let fired = 0;
+      const node = input({ type: "text", onChange: () => fired++ });
+      node.dispatchEvent(new Event("input", { bubbles: true }));
+      expect(fired).toBe(1);
+      node.dispatchEvent(new Event("change", { bubbles: true }));
+      expect(fired).toBe(1);
+    });
+
+    it("onChange у number input → событие input", () => {
+      let fired = 0;
+      const node = input({ type: "number", onChange: () => fired++ });
+      node.dispatchEvent(new Event("input", { bubbles: true }));
+      expect(fired).toBe(1);
+    });
+
+    it("onChange у textarea → событие input", () => {
+      let fired = 0;
+      const node = textarea({ onChange: () => fired++ });
+      node.dispatchEvent(new Event("input", { bubbles: true }));
+      expect(fired).toBe(1);
+    });
+
+    it("onChange у select → событие change", () => {
+      let fired = 0;
+      const node = select({ onChange: () => fired++ }, option({ value: "a" }, "a"));
+      node.dispatchEvent(new Event("change", { bubbles: true }));
+      expect(fired).toBe(1);
+      node.dispatchEvent(new Event("input", { bubbles: true }));
+      expect(fired).toBe(1);
+    });
+
+    it.each(["checkbox", "radio", "file"])("onChange у input[type=%s] → событие change", (type) => {
+      let fired = 0;
+      const node = input({ type, onChange: () => fired++ });
+      node.dispatchEvent(new Event("change", { bubbles: true }));
+      expect(fired).toBe(1);
+      node.dispatchEvent(new Event("input", { bubbles: true }));
+      expect(fired).toBe(1);
+    });
+
+    it("autoFocus → autofocus", () => {
+      const node = input({ type: "text", autoFocus: true });
+      expect(node.hasAttribute("autofocus")).toBe(true);
+    });
+
+    it("onChange до type в пропсах всё равно вешается на change для checkbox", () => {
+      let fired = 0;
+      const node = input({ onChange: () => fired++, type: "checkbox" });
+      node.dispatchEvent(new Event("change", { bubbles: true }));
+      expect(fired).toBe(1);
+      node.dispatchEvent(new Event("input", { bubbles: true }));
+      expect(fired).toBe(1);
+    });
+
+    it("readOnly — React-имя выставляет свойство и атрибут", () => {
+      const node = input({ type: "text", readOnly: true });
+      expect((node as HTMLInputElement).readOnly).toBe(true);
+      expect(node.hasAttribute("readonly")).toBe(true);
+    });
+
+    it("ref принимает объект { current }", () => {
+      const ref = { current: null as HTMLElement | null };
+      const node = div({ ref });
+      expect(ref.current).toBe(node);
+    });
+
+    it("прочие React-события лоуэрятся", () => {
+      const heard: string[] = [];
+      const node = div({
+        onMouseEnter: () => heard.push("enter"),
+        onKeyDown: () => heard.push("key"),
+        onSubmit: () => heard.push("submit"),
+        onFocus: () => heard.push("focus"),
+        onBlur: () => heard.push("blur"),
+      });
+      node.dispatchEvent(new MouseEvent("mouseenter"));
+      node.dispatchEvent(new KeyboardEvent("keydown"));
+      node.dispatchEvent(new Event("submit"));
+      node.dispatchEvent(new FocusEvent("focus"));
+      node.dispatchEvent(new FocusEvent("blur"));
+      expect(heard).toEqual(["enter", "key", "submit", "focus", "blur"]);
+    });
   });
 
   it("Signal-проп, изменившийся на null, очищает DOM-состояние", () => {
