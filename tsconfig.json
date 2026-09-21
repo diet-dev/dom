@@ -9,7 +9,14 @@
     "strict": true,
     "skipLibCheck": true,
     "types": ["vite/client"],
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "jsx": "react-jsx",
+    "jsxImportSource": "@dietdev/dom",
+    "paths": {
+      "@dietdev/dom": ["./src/index.ts"],
+      "@dietdev/dom/jsx-runtime": ["./src/jsx-runtime.ts"],
+      "@dietdev/dom/jsx-dev-runtime": ["./src/jsx-dev-runtime.ts"]
+    }
   },
-  "include": ["src/**/*.ts", "test/**/*.ts", "demo/**/*.ts"]
+  "include": ["src/**/*.ts", "test/**/*.ts", "test/**/*.tsx", "demo/**/*.ts", "demo/**/*.tsx"]
 }
