@@ -27,6 +27,15 @@ const EVENT_NAMES: Record<string, string> = {
 
 const CHANGE_AS_INPUT_TYPES = new Set(["checkbox", "radio", "file"]);
 
+type ControlledState = {
+  value?: string;
+  checked?: boolean;
+  hasChange: boolean;
+  warned: boolean;
+};
+
+const controlledState = new WeakMap<HTMLElement, ControlledState>();
+
 const BOOLEAN_PROPS = new Set([
   "disabled",
   "checked",
@@ -69,6 +78,56 @@ export function applyProps(el: HTMLElement, props: Props): void {
     if (value instanceof Signal) bind(el, () => applyProp(el, key, value.value));
     else if (value != null) applyProp(el, key, value);
   }
+  setupControlled(el, props);
+}
+
+function isFormControlled(el: HTMLElement): boolean {
+  return el.tagName === "INPUT" || el.tagName === "TEXTAREA" || el.tagName === "SELECT";
+}
+
+function controlsValue(el: HTMLElement): boolean {
+  if (el.tagName === "TEXTAREA" || el.tagName === "SELECT") return true;
+  return !CHANGE_AS_INPUT_TYPES.has(el.getAttribute("type") ?? "");
+}
+
+function controlsChecked(el: HTMLElement): boolean {
+  return el.tagName === "INPUT" && CHANGE_AS_INPUT_TYPES.has(el.getAttribute("type") ?? "") && el.getAttribute("type") !== "file";
+}
+
+function setupControlled(el: HTMLElement, props: Props): void {
+  if (!isFormControlled(el)) return;
+  const value = props.value;
+  const checked = props.checked;
+  if (value instanceof Signal && checked instanceof Signal) return;
+  const next: ControlledState = { hasChange: props.onChange != null, warned: false };
+  let tracked = false;
+  if (!(value instanceof Signal) && value != null && controlsValue(el)) {
+    next.value = String(value);
+    tracked = true;
+  }
+  if (!(checked instanceof Signal) && checked != null && controlsChecked(el)) {
+    next.checked = Boolean(checked);
+    tracked = true;
+  }
+  if (!tracked) {
+    controlledState.delete(el);
+    return;
+  }
+  const existed = controlledState.has(el);
+  controlledState.set(el, next);
+  if (existed) return;
+  el.addEventListener(domEventName(el, "onChange"), () => {
+    const state = controlledState.get(el);
+    if (!state) return;
+    if (state.value !== undefined) (el as unknown as Record<string, unknown>).value = state.value;
+    if (state.checked !== undefined) (el as unknown as Record<string, unknown>).checked = state.checked;
+    if (!state.hasChange && !state.warned) {
+      state.warned = true;
+      console.warn(
+        "You provided a `value` or `checked` prop to a form field without an `onChange` handler. This will render a read-only field.",
+      );
+    }
+  });
 }
 
 export function applyProp(el: HTMLElement, rawKey: string, value: unknown): void {
@@ -99,6 +158,14 @@ export function applyProp(el: HTMLElement, rawKey: string, value: unknown): void
   }
   if (key.startsWith("on") && typeof value === "function") {
     el.addEventListener(domEventName(el, key), value as EventListener);
+    return;
+  }
+  if (key === "defaultValue") {
+    (el as unknown as Record<string, unknown>).value = String(value);
+    return;
+  }
+  if (key === "defaultChecked") {
+    (el as unknown as Record<string, unknown>).checked = Boolean(value);
     return;
   }
   if (key === "value") {
