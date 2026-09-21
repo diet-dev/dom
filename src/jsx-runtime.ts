@@ -6,11 +6,13 @@ export interface FragmentProps {
   children?: Child | Child[];
 }
 
+function toChildList(children: Child | Child[] | undefined): Child[] {
+  return children === undefined ? [] : Array.isArray(children) ? children : [children];
+}
+
 export function Fragment(props?: FragmentProps | null): DocumentFragment {
-  const children = props?.children;
-  const list = children === undefined ? [] : Array.isArray(children) ? children : [children];
   const frag = document.createDocumentFragment();
-  appendChildren(frag, list);
+  appendChildren(frag, toChildList(props?.children));
   return frag;
 }
 
@@ -33,7 +35,7 @@ export type JsxProps = (Props & { children?: Child | Child[] }) | null | undefin
 
 export function jsx(tag: JSX.ElementType, props: JsxProps, _key?: string | number): JSX.Element {
   const { children, key: _stripped, ...rest } = props ?? {};
-  const list = children === undefined ? [] : Array.isArray(children) ? children : [children];
+  const list = toChildList(children);
   if (typeof tag === "function") {
     if (tag === Fragment) return Fragment({ children: list });
     const render = tag as (props: unknown, ...children: Child[]) => JSX.Element;

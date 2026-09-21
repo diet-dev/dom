@@ -41,7 +41,7 @@ describe("JSX: компоненты", () => {
 
   it("вложенные компоненты", () => {
     const Wrapper = component((_props: { children?: Child | Child[] }, ...children: Child[]) =>
-      section_like(children),
+      sectionLike(children),
     );
     const node = (
       <Wrapper>
@@ -55,8 +55,11 @@ describe("JSX: компоненты", () => {
     const node = <Item a={7} /> as HTMLElement;
     expect(node.getAttribute("data-a")).toBe("7");
     // @ts-expect-error a должен быть number
-    const bad = <Item a="семь" />;
-    void bad;
+    const badType = <Item a="семь" />;
+    void badType;
+    // @ts-expect-error пропущен обязательный проп a
+    const badMissing = <Item />;
+    void badMissing;
   });
 });
 
@@ -97,6 +100,18 @@ describe("JSX: Fragment", () => {
     expect(host.textContent).toBe("ПриветАня");
     name.value = "Борис";
     expect(host.textContent).toBe("ПриветБорис");
+  });
+
+  it("undefined/false внутри Fragment пропускаются", () => {
+    const frag = (
+      <>
+        {undefined}
+        {false}
+        <span>ок</span>
+      </>
+    ) as DocumentFragment;
+    expect(frag.childNodes).toHaveLength(1);
+    expect(frag.textContent).toBe("ок");
   });
 
   it("jsx(Fragment, ...) c единственным ребёнком", () => {
@@ -142,6 +157,6 @@ describe("JSX: краевые children", () => {
   });
 });
 
-function section_like(children: Child[]): HTMLElement {
+function sectionLike(children: Child[]): HTMLElement {
   return div({ class: "wrapper" }, ...children);
 }
