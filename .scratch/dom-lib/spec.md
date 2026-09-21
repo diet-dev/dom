@@ -5,6 +5,7 @@
 ## Решения
 
 - **API**: явные фабрики (`div()`, `input()`, ... ~40 тегов ядра) + `h()` внизу + `el('тег')` escape-hatch для экзотики
+- **Компоненты**: функция, возвращающая узел, — компонент по определению; `component()` добавляет перегрузку props/children как у фабрик тегов
 - **Реактивность**: `@preact/signals-core` (`signal`, `computed`, `effect`, `batch`, `untracked`); `Signal` допустим в детях и пропсах
 - **Списки**: keyed-реконсиляция (`list()`), переиспользование узлов по ключу
 - **Cleanup**: ручной `unmount(node)` — рекурсивный dispose эффектов поддерева (WeakMap disposers)
@@ -31,12 +32,13 @@
 
 ## Файлы
 
-- `src/dom/h.ts` — ядро: типы, `h()`, appendChildren, applyProps
-- `src/dom/tags.ts` — фабрики ядра + `el`
-- `src/dom/bind.ts` — `bind()`, `unmount()`, WeakMap disposers
-- `src/dom/list.ts` — `ListView`, `list()`
-- `src/dom/signals.ts` — реэкспорт `@preact/signals-core`
-- `src/dom/index.ts` — публичный API
+- `src/h.ts` — ядро: типы, `h()`, appendChildren, applyProps, splitArgs
+- `src/tags.ts` — фабрики ядра + `el`
+- `src/component.ts` — `component()`: фабрика-обёртка с перегрузкой props/children
+- `src/bind.ts` — `bind()`, `unmount()`, WeakMap disposers
+- `src/list.ts` — `ListView`, `list()`
+- `src/signals.ts` — реэкспорт `@preact/signals-core`
+- `src/index.ts` — публичный API
 
 ## Вне v1 (бэклог)
 

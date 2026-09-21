@@ -5,13 +5,13 @@ import {
   div,
   h1,
   h2,
-  input,
   li,
   list,
   section,
   span,
   ul,
 } from "../src/index.ts";
+import { autocomplete } from "./autocomplete.ts";
 
 interface Todo {
   id: number;
@@ -25,12 +25,21 @@ const todos = signal<Todo[]>([
   { id: nextId++, text: "написать свою dom-библиотеку" },
 ]);
 const draft = signal("");
+const presets = ["полить цветы", "ответить на письма", "сделать зарядку"];
+const suggestions = computed(() => [
+  ...new Set([...presets, ...todos.value.map((t) => t.text)]),
+]);
 
-function addTodo() {
-  const text = draft.value.trim();
-  if (!text) return;
-  todos.value = [...todos.value, { id: nextId++, text }];
-  draft.value = "";
+function addTodo(text: string): boolean {
+  const value = text.trim();
+  if (!value) return false;
+  if (todos.value.some((t) => t.text === value)) return false;
+  todos.value = [...todos.value, { id: nextId++, text: value }];
+  return true;
+}
+
+function submit() {
+  if (addTodo(draft.value)) draft.value = "";
 }
 
 function removeTodo(id: number) {
@@ -58,17 +67,13 @@ const app = div(
     h2("Задачи — keyed-список"),
     div(
       { class: "row" },
-      input({
-        placeholder: "Новая задача",
-        value: draft,
-        oninput: (e: Event) => {
-          draft.value = (e.target as HTMLInputElement).value;
-        },
-        onkeydown: (e: Event) => {
-          if ((e as KeyboardEvent).key === "Enter") addTodo();
-        },
+      autocomplete({
+        items: suggestions,
+        query: draft,
+        placeholder: "Новая задача — клик по подсказке подставит значение",
+        onsubmit: submit,
       }),
-      button({ onclick: addTodo }, "Добавить"),
+      button({ onclick: submit }, "Добавить"),
     ),
     ul(
       { class: "todos" },

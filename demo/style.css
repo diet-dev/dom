@@ -49,6 +49,11 @@ h1 {
   gap: 0.5rem;
 }
 
+.row .autocomplete {
+  flex: 1;
+  min-width: 0;
+}
+
 .count {
   min-width: 3ch;
   text-align: center;

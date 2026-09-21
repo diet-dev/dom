@@ -1,6 +1,4 @@
-import { Signal } from "@preact/signals-core";
-import { h } from "./h.ts";
-import { ListView } from "./list.ts";
+import { h, splitArgs } from "./h.ts";
 import type { Child, Props } from "./h.ts";
 
 export interface Factory {
@@ -10,17 +8,8 @@ export interface Factory {
 
 function factory(tag: string): Factory {
   return ((...args: unknown[]) => {
-    const [first, ...rest] = args;
-    const propsFirst =
-      first == null ||
-      (typeof first === "object" &&
-        !(first instanceof Node) &&
-        !(first instanceof Signal) &&
-        !(first instanceof ListView) &&
-        !Array.isArray(first));
-    return propsFirst
-      ? h(tag, first as Props, ...(rest as Child[]))
-      : h(tag, null, ...(args as Child[]));
+    const [props, children] = splitArgs(args);
+    return h(tag, props, ...children);
   }) as Factory;
 }
 

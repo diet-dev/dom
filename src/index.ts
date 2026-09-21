@@ -45,6 +45,8 @@ export { table, thead, tbody, tr, th, td, img } from "./tags.ts";
 export { bind, unmount } from "./bind.ts";
 export { list, ListView } from "./list.ts";
 export type { ListEntry } from "./list.ts";
+export { component } from "./component.ts";
+export type { Component } from "./component.ts";
 export {
   signal,
   computed,

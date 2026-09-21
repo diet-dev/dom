@@ -131,3 +131,17 @@ function bindChildSignal(parent: ParentNode, source: Signal<unknown>): void {
     }
   });
 }
+
+export function splitArgs(args: unknown[]): [Props | null, Child[]] {
+  const [first, ...rest] = args;
+  const propsFirst =
+    first == null ||
+    (typeof first === "object" &&
+      !(first instanceof Node) &&
+      !(first instanceof Signal) &&
+      !(first instanceof ListView) &&
+      !Array.isArray(first));
+  return propsFirst
+    ? [first as Props, rest as Child[]]
+    : [null, args as Child[]];
+}

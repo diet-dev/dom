@@ -140,6 +140,40 @@ unmount(app);
 
 Диспозит все эффекты поддерева и удаляет корневой узел из родителя. Вызывайте при уходе со «страницы» или при замене поддерева, иначе подписи сигналов переживут DOM.
 
+## Компоненты
+
+Компонент — это функция, возвращающая узел. Поскольку `Child` принимает любой `Node`, такие функции используются на одном уровне с тегами без поддержки со стороны библиотеки.
+
+Хелпер `component()` добавляет компонентам перегрузку фабрик — первая форма вызова пропсы, вторая дети, как у `div()`:
+
+```ts
+import { component, div, input, signal } from "@dietdev/dom";
+
+interface AutocompleteProps {
+  items: Signal<string[]>;
+  onpick: (item: string) => void;
+}
+
+const autocomplete = component((props: AutocompleteProps) => {
+  const query = signal(""); // приватное состояние — замыкание
+  return div(
+    { class: "autocomplete" },
+    input({
+      value: query,
+      oninput: (e) => {
+        query.value = (e.target as HTMLInputElement).value;
+      },
+    }),
+    ul(/* отфильтрованный список */),
+  );
+});
+
+// использование — как у любого тега:
+div({ class: "form" }, autocomplete({ items: cities, onpick: pick }));
+```
+
+Реактивные пропсы — по соглашению: передавайте `Signal` там, где значение должно обновляться, и читайте его через `computed` внутри компонента. При `unmount` эффекты поддерева, созданные внутри компонентов, диспозятся наравне с остальными.
+
 ## Ограничения
 
 - Нет SVG (`createElementNS` не поддерживается).
