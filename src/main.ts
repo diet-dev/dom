@@ -1,60 +1,88 @@
 import './style.css'
-import heroImg from './assets/hero.png'
-import typescriptLogo from './assets/typescript.svg'
-import viteLogo from './assets/vite.svg'
-import { setupCounter } from './counter.ts'
+import { computed, signal } from './dom/index.ts'
+import {
+  button,
+  div,
+  h1,
+  h2,
+  input,
+  li,
+  list,
+  section,
+  span,
+  ul,
+} from './dom/index.ts'
 
-document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
-<section id="center">
-  <div class="hero">
-    <img src="${heroImg}" class="base" width="170" height="179">
-    <img src="${typescriptLogo}" class="framework" alt="TypeScript logo"/>
-    <img src="${viteLogo}" class="vite" alt="Vite logo" />
-  </div>
-  <div>
-    <h1>Get started</h1>
-    <p>Edit <code>src/main.ts</code> and save to test <code>HMR</code></p>
-  </div>
-  <button id="counter" type="button" class="counter"></button>
-</section>
+interface Todo {
+  id: number
+  text: string
+}
 
-<div class="ticks"></div>
+let nextId = 1
+const count = signal(0)
+const todos = signal<Todo[]>([
+  { id: nextId++, text: 'разобраться с signals' },
+  { id: nextId++, text: 'написать свою dom-библиотеку' },
+])
+const draft = signal('')
 
-<section id="next-steps">
-  <div id="docs">
-    <svg class="icon" role="presentation" aria-hidden="true"><use href="/icons.svg#documentation-icon"></use></svg>
-    <h2>Documentation</h2>
-    <p>Your questions, answered</p>
-    <ul>
-      <li>
-        <a href="https://vite.dev/" target="_blank">
-          <img class="logo" src="${viteLogo}" alt="" />
-          Explore Vite
-        </a>
-      </li>
-      <li>
-        <a href="https://www.typescriptlang.org" target="_blank">
-          <img class="button-icon" src="${typescriptLogo}" alt="">
-          Learn more
-        </a>
-      </li>
-    </ul>
-  </div>
-  <div id="social">
-    <svg class="icon" role="presentation" aria-hidden="true"><use href="/icons.svg#social-icon"></use></svg>
-    <h2>Connect with us</h2>
-    <p>Join the Vite community</p>
-    <ul>
-      <li><a href="https://github.com/vitejs/vite" target="_blank"><svg class="button-icon" role="presentation" aria-hidden="true"><use href="/icons.svg#github-icon"></use></svg>GitHub</a></li>
-      <li><a href="https://chat.vite.dev/" target="_blank"><svg class="button-icon" role="presentation" aria-hidden="true"><use href="/icons.svg#discord-icon"></use></svg>Discord</a></li>
-      <li><a href="https://x.com/vite_js" target="_blank"><svg class="button-icon" role="presentation" aria-hidden="true"><use href="/icons.svg#x-icon"></use></svg>X.com</a></li>
-      <li><a href="https://bsky.app/profile/vite.dev" target="_blank"><svg class="button-icon" role="presentation" aria-hidden="true"><use href="/icons.svg#bluesky-icon"></use></svg>Bluesky</a></li>
-    </ul>
-  </div>
-</section>
+function addTodo() {
+  const text = draft.value.trim()
+  if (!text) return
+  todos.value = [...todos.value, { id: nextId++, text }]
+  draft.value = ''
+}
 
-<div class="ticks"></div>
-<section id="spacer"></section>
-`
+function removeTodo(id: number) {
+  todos.value = todos.value.filter(t => t.id !== id)
+}
 
-setupCounter(document.querySelector<HTMLButtonElement>('#counter')!)
+const app = div(
+  { class: 'app' },
+  h1('Демо: библиотека Dom'),
+  section(
+    { class: 'card' },
+    h2('Счётчик'),
+    div(
+      { class: 'row' },
+      button({ onclick: () => count.value-- }, '−'),
+      span({ class: 'count' }, computed(() => String(count.value))),
+      button({ onclick: () => count.value++ }, '+'),
+    ),
+  ),
+  section(
+    { class: 'card' },
+    h2('Задачи — keyed-список'),
+    div(
+      { class: 'row' },
+      input({
+        placeholder: 'Новая задача',
+        value: draft,
+        oninput: (e: Event) => {
+          draft.value = (e.target as HTMLInputElement).value
+        },
+        onkeydown: (e: Event) => {
+          if ((e as KeyboardEvent).key === 'Enter') addTodo()
+        },
+      }),
+      button({ onclick: addTodo }, 'Добавить'),
+    ),
+    ul(
+      { class: 'todos' },
+      list(
+        todos,
+        t => String(t.id),
+        t =>
+          li(
+            span(computed(() => t.value.text)),
+            button(
+              { class: 'remove', onclick: () => removeTodo(t.value.id) },
+              '×',
+            ),
+          ),
+      ),
+    ),
+  ),
+)
+
+document.getElementById('app')?.replaceChildren(app)
