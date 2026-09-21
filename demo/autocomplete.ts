@@ -15,9 +15,7 @@ export interface AutocompleteProps {
 export const autocomplete = component((props: AutocompleteProps) => {
   const open = signal(false);
   const filtered = computed(() =>
-    props.items.value.filter((i) =>
-      i.toLowerCase().includes(props.query.value.trim().toLowerCase()),
-    ),
+    props.items.value.filter((i) => i.toLowerCase().includes(props.query.value.trim().toLowerCase())),
   );
   const nothing = computed(() => filtered.value.length === 0);
 

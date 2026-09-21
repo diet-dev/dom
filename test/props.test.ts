@@ -8,15 +8,11 @@ describe("пропсы", () => {
 
   it("class: массив собирает только truthy", () => {
     const flag = false;
-    expect(
-      div({ class: ["a", flag && "b", null, undefined, "c"] }).className,
-    ).toBe("a c");
+    expect(div({ class: ["a", flag && "b", null, undefined, "c"] }).className).toBe("a c");
   });
 
   it("style: строка", () => {
-    expect(div({ style: "color: red" }).getAttribute("style")).toBe(
-      "color: red",
-    );
+    expect(div({ style: "color: red" }).getAttribute("style")).toBe("color: red");
   });
 
   it("style: объект", () => {
@@ -27,9 +23,7 @@ describe("пропсы", () => {
 
   it("dataset", () => {
     expect(div({ dataset: { userId: "7" } }).dataset.userId).toBe("7");
-    expect(div({ dataset: { userId: "7" } }).getAttribute("data-user-id")).toBe(
-      "7",
-    );
+    expect(div({ dataset: { userId: "7" } }).getAttribute("data-user-id")).toBe("7");
   });
 
   it("on* навешивает обработчик события", () => {

@@ -1,16 +1,6 @@
 import "./style.css";
 import { computed, signal } from "../src/index.ts";
-import {
-  button,
-  div,
-  h1,
-  h2,
-  li,
-  list,
-  section,
-  span,
-  ul,
-} from "../src/index.ts";
+import { button, div, h1, h2, li, list, section, span, ul } from "../src/index.ts";
 import { autocomplete } from "./autocomplete.ts";
 
 interface Todo {
@@ -26,9 +16,7 @@ const todos = signal<Todo[]>([
 ]);
 const draft = signal("");
 const presets = ["полить цветы", "ответить на письма", "сделать зарядку"];
-const suggestions = computed(() => [
-  ...new Set([...presets, ...todos.value.map((t) => t.text)]),
-]);
+const suggestions = computed(() => [...new Set([...presets, ...todos.value.map((t) => t.text)])]);
 
 function addTodo(text: string): boolean {
   const value = text.trim();
@@ -83,10 +71,7 @@ const app = div(
         (t) =>
           li(
             span(computed(() => t.value.text)),
-            button(
-              { class: "remove", onclick: () => removeTodo(t.value.id) },
-              "×",
-            ),
+            button({ class: "remove", onclick: () => removeTodo(t.value.id) }, "×"),
           ),
       ),
     ),

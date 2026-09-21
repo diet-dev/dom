@@ -18,20 +18,13 @@ function setup(items: string[]) {
   document.body.append(app);
   const field = app.querySelector("input") as HTMLInputElement;
   const dropdown = app.querySelector(".autocomplete-dropdown") as HTMLElement;
-  const visible = () =>
-    [...app.querySelectorAll(".autocomplete-list li")].map(
-      (n) => n.textContent,
-    );
+  const visible = () => [...app.querySelectorAll(".autocomplete-list li")].map((n) => n.textContent);
   return { app, field, dropdown, visible, submitted, query };
 }
 
 describe("autocomplete", () => {
   it("фильтрует подсказки при вводе", () => {
-    const { app, field, dropdown, visible } = setup([
-      "Москва",
-      "Минск",
-      "Казань",
-    ]);
+    const { app, field, dropdown, visible } = setup(["Москва", "Минск", "Казань"]);
     field.value = "мо";
     field.dispatchEvent(new Event("input"));
     expect(visible()).toEqual(["Москва"]);
@@ -40,15 +33,10 @@ describe("autocomplete", () => {
   });
 
   it("клик по подсказке подставляет значение в инпут", () => {
-    const { app, field, dropdown, query, submitted } = setup([
-      "Москва",
-      "Минск",
-    ]);
+    const { app, field, dropdown, query, submitted } = setup(["Москва", "Минск"]);
     field.value = "м";
     field.dispatchEvent(new Event("input"));
-    app
-      .querySelector(".autocomplete-list li")!
-      .dispatchEvent(new Event("mousedown"));
+    app.querySelector(".autocomplete-list li")!.dispatchEvent(new Event("mousedown"));
     expect(field.value).toBe("Москва");
     expect(query.value).toBe("Москва");
     expect(dropdown.hidden).toBe(true);
@@ -60,12 +48,8 @@ describe("autocomplete", () => {
     const { app, field, submitted } = setup(["Москва"]);
     field.value = "м";
     field.dispatchEvent(new Event("input"));
-    app
-      .querySelector(".autocomplete-list li")!
-      .dispatchEvent(new Event("mousedown"));
-    field.dispatchEvent(
-      new KeyboardEvent("keydown", { key: "Enter", bubbles: true }),
-    );
+    app.querySelector(".autocomplete-list li")!.dispatchEvent(new Event("mousedown"));
+    field.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
     expect(submitted).toEqual(["Москва"]);
     unmount(app);
   });
@@ -74,9 +58,7 @@ describe("autocomplete", () => {
     const { app, field, submitted } = setup(["Москва"]);
     field.value = "Тверь";
     field.dispatchEvent(new Event("input"));
-    field.dispatchEvent(
-      new KeyboardEvent("keydown", { key: "Enter", bubbles: true }),
-    );
+    field.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
     expect(submitted).toEqual(["Тверь"]);
     unmount(app);
   });
@@ -102,9 +84,7 @@ describe("autocomplete", () => {
 
 describe("component()", () => {
   it("вызывается как тег: пропсы + дети", () => {
-    const render = component((props: { class?: string }, ...children) =>
-      div({ class: props.class }, ...children),
-    );
+    const render = component((props: { class?: string }, ...children) => div({ class: props.class }, ...children));
     const node = render({ class: "x" }, span("внутри"));
     expect(node.className).toBe("x");
     expect(node.textContent).toBe("внутри");

@@ -2,16 +2,7 @@ import { Signal } from "@preact/signals-core";
 import { bind } from "./bind.ts";
 import { ListView } from "./list.ts";
 
-export type Child =
-  | string
-  | number
-  | Node
-  | Signal<unknown>
-  | ListView<any>
-  | Child[]
-  | null
-  | undefined
-  | false;
+export type Child = string | number | Node | Signal<unknown> | ListView<any> | Child[] | null | undefined | false;
 
 export type Props = {
   [key: string]: unknown;
@@ -32,11 +23,7 @@ const BOOLEAN_PROPS = new Set([
   "hidden",
 ]);
 
-export function h(
-  tag: string,
-  props?: Props | null,
-  ...children: Child[]
-): HTMLElement {
+export function h(tag: string, props?: Props | null, ...children: Child[]): HTMLElement {
   const el = document.createElement(tag);
   if (props) applyProps(el, props);
   appendChildren(el, children);
@@ -45,8 +32,7 @@ export function h(
 
 export function applyProps(el: HTMLElement, props: Props): void {
   for (const [key, value] of Object.entries(props)) {
-    if (value instanceof Signal)
-      bind(el, () => applyProp(el, key, value.value));
+    if (value instanceof Signal) bind(el, () => applyProp(el, key, value.value));
     else applyProp(el, key, value);
   }
 }
@@ -66,8 +52,7 @@ export function applyProp(el: HTMLElement, key: string, value: unknown): void {
     return;
   }
   if (key === "dataset" && typeof value === "object") {
-    for (const [name, val] of Object.entries(value))
-      el.dataset[name] = String(val);
+    for (const [name, val] of Object.entries(value)) el.dataset[name] = String(val);
     return;
   }
   if (key.startsWith("on") && typeof value === "function") {
@@ -141,7 +126,5 @@ export function splitArgs(args: unknown[]): [Props | null, Child[]] {
       !(first instanceof Signal) &&
       !(first instanceof ListView) &&
       !Array.isArray(first));
-  return propsFirst
-    ? [first as Props, rest as Child[]]
-    : [null, args as Child[]];
+  return propsFirst ? [first as Props, rest as Child[]] : [null, args as Child[]];
 }

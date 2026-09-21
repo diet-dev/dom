@@ -13,11 +13,7 @@ export class ListView<T> {
   readonly render: (item: Signal<T>) => Node;
   #entries: ListEntry<T>[] = [];
 
-  constructor(
-    source: Signal<T[]>,
-    keyOf: (item: T) => string,
-    render: (item: Signal<T>) => Node,
-  ) {
+  constructor(source: Signal<T[]>, keyOf: (item: T) => string, render: (item: Signal<T>) => Node) {
     this.source = source;
     this.keyOf = keyOf;
     this.render = render;

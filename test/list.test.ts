@@ -21,8 +21,7 @@ function setup(initial: Todo[]) {
   return { source, container };
 }
 
-const liNodes = (container: HTMLElement) =>
-  Array.from(container.children).filter((c) => c.tagName === "LI");
+const liNodes = (container: HTMLElement) => Array.from(container.children).filter((c) => c.tagName === "LI");
 
 describe("keyed-список", () => {
   it("рендерит начальные элементы", () => {
@@ -69,11 +68,7 @@ describe("keyed-список", () => {
       { id: 1, text: "a" },
       { id: 2, text: "b" },
     ];
-    expect(liNodes(container).map((n) => n.textContent)).toEqual([
-      "c",
-      "a",
-      "b",
-    ]);
+    expect(liNodes(container).map((n) => n.textContent)).toEqual(["c", "a", "b"]);
     expect(liNodes(container)[0]).toBe(byId.get("c"));
     expect(liNodes(container)[2]).toBe(byId.get("b"));
   });

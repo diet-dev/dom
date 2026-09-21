@@ -6,9 +6,7 @@ export interface Component<P> {
   (...children: Child[]): HTMLElement;
 }
 
-export function component<P>(
-  render: (props: P, ...children: Child[]) => HTMLElement,
-): Component<P> {
+export function component<P>(render: (props: P, ...children: Child[]) => HTMLElement): Component<P> {
   return ((...args: unknown[]) => {
     const [props, children] = splitArgs(args);
     return render((props ?? {}) as P, ...children);
