@@ -20,15 +20,10 @@ export namespace JSX {
 
 export type JsxProps = (Props & { children?: Child | Child[] }) | null | undefined;
 
-function createElement(tag: string, props: JsxProps, key?: string | number): HTMLElement {
-  const { children, ...rest } = props ?? {};
-  void key;
+export function jsx(tag: string, props: JsxProps, _key?: string | number): HTMLElement {
+  const { children, key: _stripped, ...rest } = props ?? {};
   const list = children === undefined ? [] : Array.isArray(children) ? children : [children];
   return h(tag, rest as Props, ...list);
-}
-
-export function jsx(tag: string, props: JsxProps, key?: string | number): HTMLElement {
-  return createElement(tag, props, key);
 }
 
 export const jsxs = jsx;

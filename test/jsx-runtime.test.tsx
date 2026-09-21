@@ -34,6 +34,13 @@ describe("JSX-рантайм (автоматический)", () => {
     expect(node.tagName).toBe("LI");
   });
 
+  it("key вырезается из props и при явном вызове jsx", async () => {
+    const { jsx } = await import("../src/jsx-runtime.ts");
+    const node = jsx("li", { key: "a", children: "элемент" }, "a");
+    expect(node.getAttribute("key")).toBeNull();
+    expect(node.textContent).toBe("элемент");
+  });
+
   it("props.children распаковывается (jsxs для статики)", async () => {
     const { jsxs } = await import("../src/jsx-runtime.ts");
     const node = jsxs("ul", { children: [<li key="1">один</li>, <li key="2">два</li>] });
@@ -53,7 +60,14 @@ describe("JSX-рантайм (автоматический)", () => {
 
   it("jsxDEV проксирует в jsx", async () => {
     const { jsxDEV } = await import("../src/jsx-dev-runtime.ts");
-    const node = jsxDEV("button", { type: "button", disabled: true, children: "ок" }, undefined, false, undefined, undefined);
+    const node = jsxDEV(
+      "button",
+      { type: "button", disabled: true, children: "ок" },
+      undefined,
+      false,
+      undefined,
+      undefined,
+    );
     expect(node.tagName).toBe("BUTTON");
     expect((node as HTMLButtonElement).disabled).toBe(true);
     expect(node.textContent).toBe("ок");
