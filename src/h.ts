@@ -8,7 +8,7 @@ export type Props = {
   [key: string]: unknown;
   class?: string | (string | false | null | undefined)[] | Signal<string | null>;
   style?: string | Partial<CSSStyleDeclaration>;
-  dataset?: Record<string, string>;
+  dataset?: Record<string, string> | Signal<Record<string, string> | null>;
   ref?: (el: HTMLElement) => void;
 } & { [K in `on${string}`]?: EventListener };
 
@@ -80,6 +80,10 @@ function clearProp(el: HTMLElement, key: string): void {
   }
   if (key === "style") {
     el.removeAttribute("style");
+    return;
+  }
+  if (key === "dataset") {
+    for (const name of Object.keys(el.dataset)) delete el.dataset[name];
     return;
   }
   if (key === "value") {

@@ -94,5 +94,12 @@ describe("пропсы", () => {
     expect((nodeButton as HTMLButtonElement).disabled).toBe(true);
     disabled.value = null;
     expect((nodeButton as HTMLButtonElement).disabled).toBe(false);
+
+    const data = signal<Record<string, string> | null>({ userId: "7" });
+    const nodeData = div({ dataset: data });
+    expect(nodeData.getAttribute("data-user-id")).toBe("7");
+    data.value = null;
+    expect(nodeData.getAttribute("data-user-id")).toBeNull();
+    expect(nodeData.getAttribute("dataset")).toBeNull();
   });
 });
