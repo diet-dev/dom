@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { div, input, button } from "../src/tags.ts";
+import { signal } from "../src/signals.ts";
+import { div, input, button, select, option } from "../src/tags.ts";
 
 describe("пропсы", () => {
   it("class: строка", () => {
@@ -59,5 +60,39 @@ describe("пропсы", () => {
     let captured: HTMLElement | null = null;
     const node = div({ ref: (el) => (captured = el) });
     expect(captured).toBe(node);
+  });
+
+  it("readOnly выставляет свойство и атрибут", () => {
+    const node = input({ type: "text", readOnly: true });
+    expect((node as HTMLInputElement).readOnly).toBe(true);
+    expect(node.hasAttribute("readonly")).toBe(true);
+    const off = input({ type: "text", readOnly: false });
+    expect((off as HTMLInputElement).readOnly).toBe(false);
+    expect(off.getAttribute("readonly")).toBeNull();
+  });
+
+  it("value у select применяется после монтирования детей", () => {
+    const node = select({ value: "b" }, option({ value: "a" }, "a"), option({ value: "b" }, "b"));
+    expect((node as HTMLSelectElement).value).toBe("b");
+  });
+
+  it("Signal-проп, изменившийся на null, очищает DOM-состояние", () => {
+    const placeholder = signal<string | null>("имя");
+    const node = input({ type: "text", placeholder });
+    expect(node.getAttribute("placeholder")).toBe("имя");
+    placeholder.value = null;
+    expect(node.getAttribute("placeholder")).toBeNull();
+
+    const cls = signal<string | null>("a");
+    const nodeClass = div({ class: cls });
+    expect(nodeClass.className).toBe("a");
+    cls.value = null;
+    expect(nodeClass.className).toBe("");
+
+    const disabled = signal<boolean | null>(true);
+    const nodeButton = button({ disabled });
+    expect((nodeButton as HTMLButtonElement).disabled).toBe(true);
+    disabled.value = null;
+    expect((nodeButton as HTMLButtonElement).disabled).toBe(false);
   });
 });

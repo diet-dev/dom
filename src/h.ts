@@ -6,7 +6,7 @@ export type Child = string | number | Node | Signal<unknown> | ListView<any> | C
 
 export type Props = {
   [key: string]: unknown;
-  class?: string | (string | false | null | undefined)[] | Signal<string>;
+  class?: string | (string | false | null | undefined)[] | Signal<string | null>;
   style?: string | Partial<CSSStyleDeclaration>;
   dataset?: Record<string, string>;
   ref?: (el: HTMLElement) => void;
@@ -15,7 +15,7 @@ export type Props = {
 const BOOLEAN_PROPS = new Set([
   "disabled",
   "checked",
-  "readonly",
+  "readOnly",
   "required",
   "selected",
   "multiple",
@@ -25,20 +25,23 @@ const BOOLEAN_PROPS = new Set([
 
 export function h(tag: string, props?: Props | null, ...children: Child[]): HTMLElement {
   const el = document.createElement(tag);
-  if (props) applyProps(el, props);
   appendChildren(el, children);
+  if (props) applyProps(el, props);
   return el;
 }
 
 export function applyProps(el: HTMLElement, props: Props): void {
   for (const [key, value] of Object.entries(props)) {
     if (value instanceof Signal) bind(el, () => applyProp(el, key, value.value));
-    else applyProp(el, key, value);
+    else if (value != null) applyProp(el, key, value);
   }
 }
 
 export function applyProp(el: HTMLElement, key: string, value: unknown): void {
-  if (value == null) return;
+  if (value == null) {
+    clearProp(el, key);
+    return;
+  }
   if (key === "ref" && typeof value === "function") {
     value(el);
     return;
@@ -68,6 +71,26 @@ export function applyProp(el: HTMLElement, key: string, value: unknown): void {
     return;
   }
   el.setAttribute(key, String(value));
+}
+
+function clearProp(el: HTMLElement, key: string): void {
+  if (key === "class") {
+    el.className = "";
+    return;
+  }
+  if (key === "style") {
+    el.removeAttribute("style");
+    return;
+  }
+  if (key === "value") {
+    (el as unknown as Record<string, unknown>)[key] = "";
+    return;
+  }
+  if (BOOLEAN_PROPS.has(key)) {
+    (el as unknown as Record<string, unknown>)[key] = false;
+    return;
+  }
+  el.removeAttribute(key);
 }
 
 function classToString(value: unknown): string {
