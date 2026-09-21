@@ -2,7 +2,7 @@ import type { Child, Props } from "./h.ts";
 import { splitArgs } from "./h.ts";
 
 export interface Component<P> {
-  (props?: P | null, ...children: Child[]): HTMLElement;
+  (props?: (P & { children?: Child | Child[] }) | null, ...children: Child[]): HTMLElement;
   (...children: Child[]): HTMLElement;
 }
 
