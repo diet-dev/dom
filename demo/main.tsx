@@ -1,6 +1,7 @@
 import "./style.css";
 import { computed, list, signal } from "../src/index.ts";
 import { Autocomplete } from "./autocomplete.tsx";
+import { ReadmeAutocomplete, readmeApp, readmeCities } from "./readme.tsx";
 
 interface Todo {
   id: number;
@@ -69,6 +70,11 @@ const app = (
           ),
         )}
       </ul>
+    </section>
+    <section class="card">
+      <h2>Примеры из README</h2>
+      <div class="readme-examples">{readmeApp}</div>
+      <ReadmeAutocomplete items={readmeCities} query={signal("")} placeholder="Город" />
     </section>
   </div>
 );

@@ -1,6 +1,6 @@
 # Dom
 
-Построение DOM из TypeScript: типизированные фабрики тегов, точечная реактивность на сигналах, keyed-списки с переиспользованием узлов.
+Построение DOM из TypeScript: типизированные фабрики тегов, JSX без виртуального DOM, точечная реактивность на сигналах, keyed-списки с переиспользованием узлов.
 
 ## Установка
 
@@ -14,6 +14,36 @@ import { div, button, signal, computed } from "@dietdev/dom";
 
 Пакет публикуется собранным: `dist/` содержит ES-модули и декларации типов. Для потребителя нужен Node.js 18+ и, если проект на TypeScript, компилятор 5.7 или новее — декларации сохраняют расширения `.ts` в относительных импортах, а разрешать их научились начиная с этой версии. Реактивность построена на [`@preact/signals-core`](https://www.npmjs.com/package/@preact/signals-core) (~1 КБ), он приходит как зависимость.
 
+## Настройка JSX
+
+Библиотека поставляет собственный JSX-рантайм (автоматический режим, без React). Пошагово:
+
+1. В `tsconfig.json` включите автоматический режим и укажите источник рантайма:
+
+   ```json
+   {
+     "compilerOptions": {
+       "jsx": "react-jsx",
+       "jsxImportSource": "@dietdev/dom"
+     }
+   }
+   ```
+
+2. Переименуйте файлы с разметкой в `.tsx` — компилятор будет импортировать `jsx`/`jsxs` из подпути `@dietdev/dom/jsx-runtime` сам, без ручных импортов.
+
+3. Для dev-сборок можно включить `"jsx": "react-jsxdev"` — подключится `@dietdev/dom/jsx-dev-runtime`.
+
+4. `Fragment` импортируется явно, из корня пакета: `import { Fragment } from "@dietdev/dom"`.
+
+Сборщикам ничего донастраивать не нужно: рантайм доступен через `exports`-подпути пакета (для Vite работает из коробки; для Vitest добавьте зеркальные `resolve.alias`, если он не читает `paths` вашего tsconfig).
+
+```tsx
+import { signal } from "@dietdev/dom";
+
+const count = signal(0);
+const app = <button onClick={() => count.value++}>Кликов: {count}</button>;
+```
+
 ## Зачем
 
 Виртуальный DOM решает задачу «перерисуй всё по описанию дерева». Эта библиотека исходит из другого: DOM и так умеет обновляться точечно, нужно лишь связать узлы с состоянием.
@@ -26,37 +56,11 @@ import { div, button, signal, computed } from "@dietdev/dom";
 
 ## Пример
 
-```ts
-import { signal, computed } from "@dietdev/dom";
-import { div, h1, ul, li, input, button, list } from "@dietdev/dom";
+```tsx
+import { signal, computed, list } from "@dietdev/dom";
 
 const todos = signal([{ id: 1, text: "вынести мусор", done: false }]);
 const draft = signal("");
-
-const app = div(
-  { class: "app" },
-  h1("Задачи"),
-  ul(
-    list(
-      todos,
-      (t) => String(t.id),
-      (t) =>
-        li(
-          { class: computed(() => (t.value.done ? "done" : "")) },
-          computed(() => t.value.text),
-        ),
-    ),
-  ),
-  input({
-    placeholder: "Новая задача",
-    value: draft,
-    oninput: (e) => (draft.value = (e.target as HTMLInputElement).value),
-    onkeydown: (e) => {
-      if (e.key === "Enter") add();
-    },
-  }),
-  button({ onclick: add }, "Добавить"),
-);
 
 function add() {
   const text = draft.value.trim();
@@ -64,6 +68,30 @@ function add() {
   todos.value = [...todos.value, { id: Date.now(), text, done: false }];
   draft.value = "";
 }
+
+const app = (
+  <div className="app">
+    <h1>Задачи</h1>
+    <ul>
+      {list(
+        todos,
+        (t) => String(t.id),
+        (t) => (
+          <li className={computed(() => (t.value.done ? "done" : ""))}>{computed(() => t.value.text)}</li>
+        ),
+      )}
+    </ul>
+    <input
+      placeholder="Новая задача"
+      value={draft}
+      onChange={(e) => (draft.value = (e.target as HTMLInputElement).value)}
+      onKeyDown={(e) => {
+        if ((e as KeyboardEvent).key === "Enter") add();
+      }}
+    />
+    <button onClick={add}>Добавить</button>
+  </div>
+);
 
 document.getElementById("app")!.append(app);
 ```
@@ -76,19 +104,36 @@ div(props?, ...children)        // фабрика на тег
 el("progress", { value: 50 })   // escape-hatch для любого тега
 ```
 
-Фабрики есть на ~41 тег ядра: контейнеры (`div`, `section`, `article`, `header`, `footer`, `main`, `nav`, `aside`, `span`), текст (`h1`–`h6`, `p`, `a`, `strong`, `em`, `code`, `pre`, `small`, `blockquote`, `br`), списки (`ul`, `ol`, `li`), формы (`form`, `input`, `button`, `label`, `select`, `option`, `textarea`), таблицы (`table`, `thead`, `tbody`, `tr`, `th`, `td`), `img`. Всё остальное — через `el("тег")`.
+JSX-выражение `<div {...}>…</div>` — это тот же вызов `h("div", props, ...children)`: фабрики, `h()` и JSX проходят через один слой применения пропсов и могут свободно смешиваться.
+
+Фабрики есть на ~41 тег ядра: контейнеры (`div`, `section`, `article`, `header`, `footer`, `main`, `nav`, `aside`, `span`), текст (`h1`–`h6`, `p`, `a`, `strong`, `em`, `code`, `pre`, `small`, `blockquote`, `br`), списки (`ul`, `ol`, `li`), формы (`form`, `input`, `button`, `label`, `select`, `option`, `textarea`), таблицы (`table`, `thead`, `tbody`, `tr`, `th`, `td`), `img`. Всё остальное — через `el("тег")` или любой строковый тег в JSX.
 
 Первая форма вызова фабрики — пропсы, вторая — дети: `div({ class: "x" }, …)` и `div("текст")` равнозначны.
 
 ### Пропсы
 
-- `on*` (функция) → `addEventListener`
-- `class` → строка, массив с пропусками falsy или signal: `["a", isActive && "b"]`
+Имена — React-совместимые; DOM-алиасы (`class` вместо `className`, `oninput` вместо `onInput`) тоже принимаются.
+
+- `on*` (функция, React-имя) → `addEventListener`: `onClick` → `click`, `onKeyDown` → `keydown`, исключение — `onDoubleClick` → `dblclick`
+- `onChange` — элемент-зависим: текстовый `input` и `textarea` → событие `input`, `select` и `input[type=checkbox|radio|file]` → `change`. Отступление от React: `onFocus`/`onBlur` остаются DOM-событиями и не всплывают
+- `className` (алиас `class`) → строка, массив с пропусками falsy или signal: `["a", isActive && "b"]`
+- `htmlFor` (алиас `for`) → связывание `label` с полем
 - `style` → строка или объект `CSSStyleDeclaration`
 - `dataset` → `el.dataset`
-- `ref` → callback `(el) => void`
-- `value`, `disabled`, `checked` и другие булевы → свойствами элемента, не атрибутами
+- `ref` → callback `(el) => void` или объект `{ current }`
+- `readOnly`, `autoFocus`, `disabled`, `checked`, `required`, `selected`, `multiple`, `hidden` → свойствами элемента (IDL-регистр), не атрибутами
+- `key` → игнорируется (не доходит до DOM); переиспользование узлов — только через `list()`
 - остальное → `setAttribute`
+
+### Формы и контролируемость
+
+`value` и `checked` имеют три режима — идиоматичный и два legacy-совместимых:
+
+- **`Signal` (рекомендуется).** `value={draft}` связывает поле с сигналом: поле показывает `draft.value` и обновляется при каждом изменении (signal → DOM). Ввод пользователя попадает в сигнал обработчиком `onChange={(e) => (draft.value = e.target.value)}` — значением владеет сигнал, «заморозки» как у React не происходит.
+- **plain-значение + `onChange`** — контролируемость как в React: пользовательский ввод сбрасывается к пропсу, пока не обновлён внешний источник. Обновляйте состояние в `onChange`, иначе поле «заморожено».
+- **plain-значение без `onChange`** — read-only: ввод сбрасывается, один раз выдаётся `console.warn`.
+
+Uncontrolled-старт — через `defaultValue`/`defaultChecked`: поле инициализируется значением и дальше живёт своей жизнью.
 
 ### Дети
 
@@ -111,9 +156,11 @@ Signal-ребёнок обновляет содержимое узла при и
 
 Реэкспортируется API `@preact/signals-core`: `signal`, `computed`, `effect`, `batch`, `untracked`. Сигнал допустим в детях и в любом пропсе:
 
-```ts
+```tsx
 const busy = signal(false);
-button({ disabled: busy, onclick: save }, "Сохранить");
+<button disabled={busy} onClick={save}>
+  Сохранить
+</button>;
 ```
 
 ### Списки
@@ -142,44 +189,82 @@ unmount(app);
 
 ## Компоненты
 
-Компонент — это функция, возвращающая узел. Поскольку `Child` принимает любой `Node`, такие функции используются на одном уровне с тегами без поддержки со стороны библиотеки.
+Компонент — это функция от пропсов, возвращающая узел. В JSX используется как тег: `<Comp a={1}>child</Comp>` превращается в вызов `Comp({ a: 1 }, "child")`.
 
 Хелпер `component()` добавляет компонентам перегрузку фабрик — первая форма вызова пропсы, вторая дети, как у `div()`:
 
-```ts
-import { component, div, input, signal } from "@dietdev/dom";
+```tsx
+import { component, computed, list, signal } from "@dietdev/dom";
+import type { Signal } from "@dietdev/dom";
 
 interface AutocompleteProps {
   items: Signal<string[]>;
-  onpick: (item: string) => void;
+  query: Signal<string>;
+  placeholder?: string;
+  onsubmit?: (item: string) => void;
 }
 
-const autocomplete = component((props: AutocompleteProps) => {
-  const query = signal(""); // приватное состояние — замыкание
-  return div(
-    { class: "autocomplete" },
-    input({
-      value: query,
-      oninput: (e) => {
-        query.value = (e.target as HTMLInputElement).value;
-      },
-    }),
-    ul(/* отфильтрованный список */),
+const Autocomplete = component((props: AutocompleteProps) => {
+  const open = signal(false);
+  const filtered = computed(() =>
+    props.items.value.filter((i) => i.toLowerCase().includes(props.query.value.trim().toLowerCase())),
+  );
+  return (
+    <div className="autocomplete">
+      <input
+        placeholder={props.placeholder}
+        value={props.query}
+        onChange={(e) => {
+          props.query.value = (e.target as HTMLInputElement).value;
+          open.value = true;
+        }}
+        onKeyDown={(e) => {
+          if ((e as KeyboardEvent).key === "Enter") {
+            open.value = false;
+            props.onsubmit?.(props.query.value);
+          }
+        }}
+        onBlur={() => {
+          open.value = false;
+        }}
+      />
+      <ul hidden={computed(() => !open.value || filtered.value.length === 0)}>
+        {list(
+          filtered,
+          (i) => i,
+          (i) => (
+            <li
+              onMouseDown={() => {
+                props.query.value = i.peek();
+                open.value = false;
+              }}
+            >
+              {computed(() => i.value)}
+            </li>
+          ),
+        )}
+      </ul>
+    </div>
   );
 });
 
-// использование — как у любого тега:
-div({ class: "form" }, autocomplete({ items: cities, onpick: pick }));
+// использование — как любого тега:
+const query = signal("");
+<div className="form">
+  <Autocomplete items={cities} query={query} onsubmit={pick} />
+</div>;
 ```
 
-Реактивные пропсы — по соглашению: передавайте `Signal` там, где значение должно обновляться, и читайте его через `computed` внутри компонента. При `unmount` эффекты поддерева, созданные внутри компонентов, диспозятся наравне с остальными.
+Реактивные пропсы — по соглашению: состояние, которым владеет вызывающий (здесь `query`), передавайте как `Signal`, приватное состояние компонента (`open`) — замыкание внутри `component()`. Читайте signal-пропсы через `computed` там, где значение участвует в производных данных. При `unmount` эффекты поддерева, созданные внутри компонентов, диспозятся наравне с остальными.
 
 ## Ограничения
 
 - Нет SVG (`createElementNS` не поддерживается).
 - Пропсы типизируются общим `Props`, а не по-тегам: опечатка в `plaeholder` не поймается компилятором.
+- `key` игнорируется — переиспользование узлов списков только через `list()`.
+- `onFocus`/`onBlur` не всплывают (DOM-семантика, не React).
 - `render` в `list` должен возвращать один узел.
 
 ## Развитие
 
-Список задач — в `.scratch/dom-lib/`. Демо: `npm run dev` (каталог `demo/`).
+Список задач — в `.scratch/jsx/`. Демо: `npm run dev` (каталог `demo/`; основные примеры из этого README скопированы в `demo/readme.tsx` и проверяются тестом `test/readme.test.tsx`).
