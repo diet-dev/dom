@@ -46,17 +46,17 @@ describe("JSX: сквозной рендер", () => {
   });
 
   it("булевы и null/false children пропускаются, числа рендерятся", () => {
-    const flag = signal("да");
+    const text = signal("да");
     const node = (
       <p>
-        {flag}
+        {text}
         {null}
         {undefined}
         {7}
       </p>
     ) as HTMLElement;
     expect(node.textContent).toBe("да7");
-    flag.value = "нет";
+    text.value = "нет";
     expect(node.textContent).toBe("нет7");
   });
 
