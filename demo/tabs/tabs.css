@@ -1,0 +1,35 @@
+.tabs {
+  display: grid;
+  gap: 1rem;
+}
+
+.tablist {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+button.tab {
+  background: #0f172a;
+  border: 1px solid #334155;
+  color: #94a3b8;
+  padding: 0.4rem 0.9rem;
+  font-size: 0.95rem;
+}
+
+button.tab:hover {
+  background: #0f172a;
+  color: #e2e8f0;
+  border-color: #475569;
+}
+
+button.tab-active {
+  background: #3b82f6;
+  border-color: #3b82f6;
+  color: white;
+}
+
+button.tab-active:hover {
+  background: #2563eb;
+  color: white;
+}

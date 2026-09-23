@@ -194,68 +194,18 @@ unmount(app);
 Хелпер `component()` добавляет компонентам перегрузку фабрик — первая форма вызова пропсы, вторая дети, как у `div()`:
 
 ```tsx
-import { component, computed, list, signal } from "@dietdev/dom";
-import type { Signal } from "@dietdev/dom";
+import { component, signal } from "@dietdev/dom";
 
-interface AutocompleteProps {
-  items: Signal<string[]>;
-  query: Signal<string>;
-  placeholder?: string;
-  onsubmit?: (item: string) => void;
-}
-
-const Autocomplete = component((props: AutocompleteProps) => {
-  const open = signal(false);
-  const filtered = computed(() =>
-    props.items.value.filter((i) => i.toLowerCase().includes(props.query.value.trim().toLowerCase())),
-  );
-  return (
-    <div className="autocomplete">
-      <input
-        placeholder={props.placeholder}
-        value={props.query}
-        onChange={(e) => {
-          props.query.value = (e.target as HTMLInputElement).value;
-          open.value = true;
-        }}
-        onKeyDown={(e) => {
-          if ((e as KeyboardEvent).key === "Enter") {
-            open.value = false;
-            props.onsubmit?.(props.query.value);
-          }
-        }}
-        onBlur={() => {
-          open.value = false;
-        }}
-      />
-      <ul hidden={computed(() => !open.value || filtered.value.length === 0)}>
-        {list(
-          filtered,
-          (i) => i,
-          (i) => (
-            <li
-              onMouseDown={() => {
-                props.query.value = i.peek();
-                open.value = false;
-              }}
-            >
-              {computed(() => i.value)}
-            </li>
-          ),
-        )}
-      </ul>
-    </div>
-  );
+const Counter = component(() => {
+  const count = signal(0);
+  return <button onClick={() => count.value++}>Кликов: {count}</button>;
 });
 
 // использование — как любого тега:
-const query = signal("");
-<div className="form">
-  <Autocomplete items={cities} query={query} onsubmit={pick} />
-</div>;
+<Counter />;
 ```
 
-Реактивные пропсы — по соглашению: состояние, которым владеет вызывающий (здесь `query`), передавайте как `Signal`, приватное состояние компонента (`open`) — замыкание внутри `component()`. Читайте signal-пропсы через `computed` там, где значение участвует в производных данных. При `unmount` эффекты поддерева, созданные внутри компонентов, диспозятся наравне с остальными.
+Реактивные пропсы — по соглашению: состояние, которым владеет вызывающий, передавайте как `Signal`, приватное состояние компонента — замыкание внутри `component()`. Читайте signal-пропсы через `computed` там, где значение участвует в производных данных. При `unmount` эффекты поддерева, созданные внутри компонентов, диспозятся наравне с остальными.
 
 ## Ограничения
 
@@ -267,4 +217,4 @@ const query = signal("");
 
 ## Развитие
 
-Список задач — в `.scratch/jsx/`. Демо: `npm run dev` (каталог `demo/`; основные примеры из этого README скопированы в `demo/readme.tsx` и проверяются тестом `test/readme.test.tsx`).
+Список задач — в `.scratch/jsx/`. Демо: `npm run dev` (каталог `demo/`; пример из этого README скопирован в `demo/readme.tsx` и проверяется тестом `test/readme.test.tsx`).
