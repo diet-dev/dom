@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { signal } from "../src/signals.ts";
+import { h } from "../src/h.ts";
 import { div, input, button, select, option, textarea, label } from "../src/tags.ts";
 
 describe("пропсы", () => {
@@ -89,6 +90,15 @@ describe("пропсы", () => {
       const node = div({ key: "1", class: "a" });
       expect(node.getAttribute("key")).toBeNull();
       expect(node.hasAttribute("key")).toBe(false);
+    });
+
+    it("children в props игнорируется, как key", () => {
+      const node = h("div", { children: ["a", "b"] });
+      expect(node.hasAttribute("children")).toBe(false);
+      expect(node.textContent).toBe("");
+      const str = div({ children: "привет" });
+      expect(str.hasAttribute("children")).toBe(false);
+      expect(str.textContent).toBe("");
     });
 
     it("onDoubleClick → dblclick", () => {

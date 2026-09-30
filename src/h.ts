@@ -48,7 +48,7 @@ const BOOLEAN_PROPS = new Set([
 ]);
 
 function normalizeKey(key: string): string | null {
-  if (key === "key") return null;
+  if (key === "key" || key === "children") return null;
   return PROP_NAMES[key] ?? key;
 }
 
