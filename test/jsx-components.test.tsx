@@ -7,17 +7,13 @@ import { Fragment, jsx, jsxs } from "../src/jsx-runtime.ts";
 
 type ItemProps = { a: number };
 
-const Item = component((props: ItemProps, ...children: Child[]) =>
-  div({ "data-a": String(props.a) }, ...children),
-);
+const Item = component((props: ItemProps, ...children: Child[]) => div({ "data-a": String(props.a) }, ...children));
 
 describe("JSX: компоненты", () => {
   it("<Comp a={1}>текст</Comp> вызывает функцию-компонент с (props, ...children)", () => {
-    const render = vi.fn((props: ItemProps, ...children: Child[]) =>
-      div({ "data-a": String(props.a) }, ...children),
-    );
+    const render = vi.fn((props: ItemProps, ...children: Child[]) => div({ "data-a": String(props.a) }, ...children));
     const Comp = component(render);
-    const node = <Comp a={1}>текст</Comp> as HTMLElement;
+    const node = (<Comp a={1}>текст</Comp>) as HTMLElement;
     expect(render).toHaveBeenCalledTimes(1);
     const [calledProps, ...calledChildren] = render.mock.calls[0];
     expect(calledProps).toEqual({ a: 1 });
@@ -28,7 +24,7 @@ describe("JSX: компоненты", () => {
   });
 
   it("компонент без детей и с несколькими детьми", () => {
-    const noChildren = <Item a={2} /> as HTMLElement;
+    const noChildren = (<Item a={2} />) as HTMLElement;
     expect(noChildren.textContent).toBe("");
     const multi = (
       <Item a={3}>
@@ -40,9 +36,7 @@ describe("JSX: компоненты", () => {
   });
 
   it("вложенные компоненты", () => {
-    const Wrapper = component((_props: { children?: Child | Child[] }, ...children: Child[]) =>
-      sectionLike(children),
-    );
+    const Wrapper = component((_props: { children?: Child | Child[] }, ...children: Child[]) => sectionLike(children));
     const node = (
       <Wrapper>
         <Item a={5}>внутри</Item>
@@ -52,7 +46,7 @@ describe("JSX: компоненты", () => {
   });
 
   it("Component<P> типизируется как JSX-tag: позитивные и негативные кейсы", () => {
-    const node = <Item a={7} /> as HTMLElement;
+    const node = (<Item a={7} />) as HTMLElement;
     expect(node.getAttribute("data-a")).toBe("7");
     // @ts-expect-error a должен быть number
     const badType = <Item a="семь" />;
@@ -137,7 +131,7 @@ describe("JSX: краевые children", () => {
 
   it("массив детей в компоненте", () => {
     const items = [<span key="1">один</span>, <span key="2">два</span>];
-    const node = <Item a={1}>{items}</Item> as HTMLElement;
+    const node = (<Item a={1}>{items}</Item>) as HTMLElement;
     expect(node.children).toHaveLength(2);
   });
 
@@ -145,9 +139,7 @@ describe("JSX: краевые children", () => {
     const name = signal("Аня");
     const node = (
       <div>
-        <Item a={1}>
-          Привет, {name}!
-        </Item>
+        <Item a={1}>Привет, {name}!</Item>
       </div>
     ) as HTMLElement;
     const inner = node.firstChild as HTMLElement;

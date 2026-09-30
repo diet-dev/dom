@@ -122,9 +122,9 @@ describe("autocomplete", () => {
 
 describe("component()", () => {
   it("вызывается как тег: пропсы + дети", () => {
-    const render = component(
-      (props: { class?: string }, ...children: Child[]) => <div class={props.class}>{children}</div>,
-    );
+    const render = component((props: { class?: string }, ...children: Child[]) => (
+      <div class={props.class}>{children}</div>
+    ));
     const node = render({ class: "x" }, <span>внутри</span>) as HTMLElement;
     expect(node.className).toBe("x");
     expect(node.textContent).toBe("внутри");

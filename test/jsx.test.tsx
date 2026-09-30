@@ -5,14 +5,12 @@ import type { Child } from "../src/index.ts";
 describe("JSX: сквозной рендер", () => {
   it("вложенные элементы, компоненты и Signal-children в одном дереве", () => {
     const name = signal("Аня");
-    const Card = component(
-      (props: { title: string }, ...children: Child[]) => (
-        <section class="card">
-          <h2>{props.title}</h2>
-          {children}
-        </section>
-      ),
-    );
+    const Card = component((props: { title: string }, ...children: Child[]) => (
+      <section class="card">
+        <h2>{props.title}</h2>
+        {children}
+      </section>
+    ));
     const node = (
       <main class="app">
         <Card title="Привет">
@@ -34,9 +32,13 @@ describe("JSX: сквозной рендер", () => {
     ]);
     const node = (
       <ul class="todos">
-        {list(todos, (t) => String(t.id), (t) => (
-          <li key={t.value.id}>{computed(() => t.value.text)}</li>
-        ))}
+        {list(
+          todos,
+          (t) => String(t.id),
+          (t) => (
+            <li key={t.value.id}>{computed(() => t.value.text)}</li>
+          ),
+        )}
       </ul>
     ) as HTMLElement;
     const items = () => [...node.querySelectorAll("li")].map((li) => li.textContent);
@@ -62,7 +64,7 @@ describe("JSX: сквозной рендер", () => {
 
   it("Signal-атрибут реактивно обновляет DOM", () => {
     const hidden = signal(false);
-    const node = <div hidden={hidden}>контент</div> as HTMLElement;
+    const node = (<div hidden={hidden}>контент</div>) as HTMLElement;
     expect(node.hidden).toBe(false);
     hidden.value = true;
     expect(node.hidden).toBe(true);

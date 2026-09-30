@@ -112,7 +112,7 @@ README («Дети») и LEARN (раздел 4) теперь явно преду
 - **N2.** [x] ИСПРАВЛЕНО — `source.value ?? []` убран: контракт `Signal<T[]>`; нарушение теперь падает громко, а не молча рендерит пустоту.
 - **N3.** [x] ИСПРАВЛЕНО — тело reconcile обёрнуто в `batch()`: N записей item-сигналов → один проход уведомлений.
 - **N4.** [x] ИСПРАВЛЕНО — устаревший TODO.md удалён (находки ревью живут в `.scratch/pre-release-review/review.md`).
-- **N5.** [x] ЧАСТИЧНО — LEARN.md добавлен в `files` (ссылка из README живёт и на npm); repository/bugs/homepage пропущены по решению владельца.
+- **N5.** [x] ИСПРАВЛЕНО — LEARN.md добавлен в `files`; добавлены `repository` (`git+https://github.com/diet-dev/dom.git`) и `bugs`; `homepage` не добавляли.
 - **N6.** [x] ИСПРАВЛЕНО — добавлен подпуть `exports["./package.json"]`.
 - **N7.** wontfix — plain-object первый аргумент трактуется как пропсы (`splitArgs`): надёжной рантайм-эвристики «объект-ребёнок vs пропсы» нет; контракт фиксируется типами `Child`/`Props`.
 - **N8.** [x] ИСПРАВЛЕНО — размер перемерен фактическим бандлом (esbuild bundle+minify+gzip): 4156 байт ≈ 4.2 КБ, signals-core ≈ 2 КБ gzip. README обновлён (было «3.7 КБ»/«~1 КБ»).
@@ -151,7 +151,8 @@ README («Дети») и LEARN (раздел 4) теперь явно преду
 - **M1 (док, неверное заявление).** README/LEARN требовали TS **5.7+**, объясняя это `.ts`-расширениями в декларациях. Фактически типы резолвятся уже на **5.0.4** (и `bundler`, и `nodenext`), а на 4.9 падают `TS2691`. Минимум исправлен на 5.0.
 - **M2 (док, ограничение).** Legacy `moduleResolution: node10` не резолвит JSX-подпуть `@dietdev/dom/jsx-runtime`; корневой API работает. Задокументировано в README («Настройка JSX», «Ограничения»).
 - **M3 (док).** Пакет ESM-only: `require()` — только Node ≥ 22.12 (`require(esm)`), иначе `ERR_REQUIRE_ESM`. Задокументировано.
-- **M4 (процесс).** [x] ИСПРАВЛЕНО — `npm pack` не пересобирал `dist` (был только `prepublishOnly`). Добавлен `"prepack": "npm run build"`; `prepublishOnly` теперь только `typecheck && test`.
+- **M4 (процесс).** [x] ИСПРАВЛЕНО — `npm pack` не пересобирал `dist` (был только `prepublishOnly`). Добавлен `"prepare": "npm run build"`: пересобирает при `pack`/`publish` и покрывает установку по git-URL; `prepublishOnly` — только `typecheck && test`.
+- **M5 (гигиена).** [x] ИСПРАВЛЕНО — `npm run format:check` падал на 5 тестовых `.tsx` (неформатированы с коммита `b08a7de`); тесты отформатированы, добавлен `.prettierignore` (`.scratch`, `TODO.md`).
 
 ---
 

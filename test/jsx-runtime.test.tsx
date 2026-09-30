@@ -29,7 +29,7 @@ describe("JSX-рантайм (автоматический)", () => {
   });
 
   it("key отрезается и не становится атрибутом", () => {
-    const node = <li key="a">элемент</li> as HTMLElement;
+    const node = (<li key="a">элемент</li>) as HTMLElement;
     expect(node.getAttribute("key")).toBeNull();
     expect(node.tagName).toBe("LI");
   });
@@ -79,7 +79,7 @@ describe("JSX-рантайм (автоматический)", () => {
   });
 
   it("JSX namespace доступен без глобальных деклараций (типизация)", () => {
-    const node = <custom-tag data-x="1">текст</custom-tag> as HTMLElement;
+    const node = (<custom-tag data-x="1">текст</custom-tag>) as HTMLElement;
     expect(node.tagName).toBe("CUSTOM-TAG");
     expect(node.getAttribute("data-x")).toBe("1");
   });
