@@ -1,7 +1,7 @@
 import { batch, Signal, signal } from "@preact/signals-core";
 import { bind, unmount } from "./bind.ts";
 
-export interface ListEntry<T> {
+interface ListEntry<T> {
   key: string;
   item: Signal<T>;
   node: Node;
