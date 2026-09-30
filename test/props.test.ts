@@ -229,4 +229,34 @@ describe("пропсы", () => {
       expect(node.style.marginTop).toBe("8px");
     });
   });
+
+  describe("false в пропсах трактуется как «не задано»", () => {
+    it("on*: false не вешает ни слушателя, ни атрибута", () => {
+      const node = div({ onClick: false });
+      expect(node.hasAttribute("onclick")).toBe(false);
+      expect(node.outerHTML).toBe("<div></div>");
+      node.dispatchEvent(new MouseEvent("click"));
+    });
+
+    it("атрибуты: false не применяется", () => {
+      expect(div({ title: false }).getAttribute("title")).toBeNull();
+      expect(div({ class: false }).className).toBe("");
+    });
+
+    it("булевы свойства: false — валидное значение", () => {
+      expect(input({ hidden: false }).hidden).toBe(false);
+      const hid = signal<boolean>(true);
+      const node = div({ hidden: hid });
+      hid.value = false;
+      expect(node.hidden).toBe(false);
+    });
+
+    it("signal, ставший false, очищает атрибут", () => {
+      const title = signal<string | false>("x");
+      const node = div({ title });
+      expect(node.getAttribute("title")).toBe("x");
+      title.value = false;
+      expect(node.getAttribute("title")).toBeNull();
+    });
+  });
 });

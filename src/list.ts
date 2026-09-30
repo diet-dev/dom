@@ -13,6 +13,7 @@ export class ListView<T> {
   readonly render: (item: Signal<T>) => Node;
   #entries: ListEntry<T>[] = [];
   #dupesWarned = new Set<string>();
+  #mounted = false;
 
   constructor(source: Signal<T[]>, keyOf: (item: T) => string, render: (item: Signal<T>) => Node) {
     this.source = source;
@@ -21,6 +22,8 @@ export class ListView<T> {
   }
 
   mount(parent: ParentNode): void {
+    if (this.#mounted) throw new Error("ListView is already mounted");
+    this.#mounted = true;
     const anchor = document.createComment("list");
     parent.append(anchor);
     bind(anchor, () => this.#reconcile(anchor));

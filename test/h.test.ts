@@ -27,6 +27,12 @@ describe("h — ядро", () => {
     const node = h("div", null, "a", null, undefined, false, "b");
     expect(node.textContent).toBe("ab");
   });
+
+  it("0 и NaN — текст, не пропускаются", () => {
+    const count = 0;
+    expect(h("div", null, count && h("span", null, "x")).textContent).toBe("0");
+    expect(h("div", null, NaN).textContent).toBe("NaN");
+  });
 });
 
 describe("фабрики", () => {

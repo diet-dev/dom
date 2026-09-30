@@ -140,4 +140,15 @@ describe("дубли ключей", () => {
     unmount(container);
     vi.restoreAllMocks();
   });
+
+  it("повторный mount бросает ошибку", () => {
+    const source = signal<Todo[]>([{ id: 1, text: "a" }]);
+    const view = list(
+      source,
+      (t) => String(t.id),
+      (t) => li(t.value.text),
+    );
+    view.mount(ul());
+    expect(() => view.mount(ul())).toThrow(/already mounted/);
+  });
 });

@@ -1,5 +1,5 @@
 import { Signal } from "@preact/signals-core";
-import { bind } from "./bind.ts";
+import { bind, unmount } from "./bind.ts";
 import { ListView } from "./list.ts";
 
 export type Child = string | number | Node | Signal<unknown> | ListView<any> | Child[] | null | undefined | false;
@@ -7,13 +7,13 @@ export type Child = string | number | Node | Signal<unknown> | ListView<any> | C
 export type Props = {
   [key: string]: unknown;
   key?: unknown;
-  class?: string | (string | false | null | undefined)[] | Signal<string | null>;
-  className?: string | (string | false | null | undefined)[] | Signal<string | null>;
+  class?: string | false | (string | false | null | undefined)[] | Signal<string | null>;
+  className?: string | false | (string | false | null | undefined)[] | Signal<string | null>;
   htmlFor?: string;
   style?: string | Partial<CSSStyleDeclaration> | Signal<string | Partial<CSSStyleDeclaration> | null>;
   dataset?: Record<string, string> | Signal<Record<string, string> | null>;
   ref?: ((el: HTMLElement) => void) | { current: HTMLElement | null };
-} & { [K in `on${string}`]?: EventListener };
+} & { [K in `on${string}`]?: EventListener | false };
 
 const PROP_NAMES: Record<string, string> = {
   className: "class",
@@ -136,7 +136,11 @@ function setupControlled(el: HTMLElement, props: Props): void {
 export function applyProp(el: HTMLElement, rawKey: string, value: unknown): void {
   const key = normalizeKey(rawKey);
   if (key == null) return;
-  if (value == null) {
+  if (key.startsWith("on")) {
+    if (typeof value === "function") el.addEventListener(domEventName(el, key), value as EventListener);
+    return;
+  }
+  if (value == null || value === false) {
     clearProp(el, key);
     return;
   }
@@ -158,10 +162,6 @@ export function applyProp(el: HTMLElement, rawKey: string, value: unknown): void
   if (key === "dataset" && typeof value === "object") {
     for (const name of Object.keys(el.dataset)) delete el.dataset[name];
     for (const [name, val] of Object.entries(value)) el.dataset[name] = String(val);
-    return;
-  }
-  if (key.startsWith("on") && typeof value === "function") {
-    el.addEventListener(domEventName(el, key), value as EventListener);
     return;
   }
   if (key === "defaultValue") {
@@ -253,7 +253,7 @@ function bindChildSignal(parent: ParentNode, source: Signal<unknown>): void {
     else if (value instanceof Node) next = value as ChildNode;
     else next = document.createTextNode(String(value));
     if (next !== current) {
-      current?.remove();
+      if (current) unmount(current);
       current = next;
       if (next) marker.parentNode?.insertBefore(next, marker);
     }

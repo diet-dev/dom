@@ -24,6 +24,19 @@ describe("реактивные дети", () => {
     expect(node.textContent).toBe("снова");
     expect(node.firstChild).not.toBe(shown);
   });
+
+  it("заменённый узел диспозит эффекты своего поддерева", () => {
+    const inner = signal("раз");
+    const innerEl = div(inner);
+    const view = signal<Node | null>(innerEl);
+    const host = div(view);
+    expect(host.textContent).toBe("раз");
+
+    view.value = div("другой");
+    inner.value = "два";
+    expect(innerEl.textContent).toBe("раз"); // эффект диспозился — не обновился
+    expect(host.textContent).toBe("другой");
+  });
 });
 
 describe("реактивные пропсы", () => {
