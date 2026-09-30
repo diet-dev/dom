@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { computed, signal } from "../src/signals.ts";
 import { list } from "../src/list.ts";
 import { div, li, ul } from "../src/tags.ts";
@@ -108,5 +108,36 @@ describe("список рядом со статичными детьми", () =>
     );
     source.value = ["x", "y"];
     expect(node.textContent).toBe("до xy после");
+  });
+});
+
+describe("дубли ключей", () => {
+  it("первый выигрывает, warn один раз, зомби-узлов нет", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const source = signal<Todo[]>([
+      { id: 1, text: "a" },
+      { id: 1, text: "b" },
+    ]);
+    const container = ul(
+      list(
+        source,
+        (t) => String(t.id),
+        (t) => li(computed(() => t.value.text)),
+      ),
+    );
+    document.body.append(container);
+    expect(liNodes(container).map((n) => n.textContent)).toEqual(["a"]);
+
+    source.value = [{ id: 1, text: "c" }];
+    expect(liNodes(container).map((n) => n.textContent)).toEqual(["c"]);
+
+    source.value = [
+      { id: 1, text: "a" },
+      { id: 1, text: "b" },
+    ];
+    expect(liNodes(container).map((n) => n.textContent)).toEqual(["a"]);
+    expect(warn).toHaveBeenCalledTimes(1);
+    unmount(container);
+    vi.restoreAllMocks();
   });
 });

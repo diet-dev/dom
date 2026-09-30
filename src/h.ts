@@ -10,7 +10,7 @@ export type Props = {
   class?: string | (string | false | null | undefined)[] | Signal<string | null>;
   className?: string | (string | false | null | undefined)[] | Signal<string | null>;
   htmlFor?: string;
-  style?: string | Partial<CSSStyleDeclaration>;
+  style?: string | Partial<CSSStyleDeclaration> | Signal<string | Partial<CSSStyleDeclaration> | null>;
   dataset?: Record<string, string> | Signal<Record<string, string> | null>;
   ref?: ((el: HTMLElement) => void) | { current: HTMLElement | null };
 } & { [K in `on${string}`]?: EventListener };
@@ -156,6 +156,7 @@ export function applyProp(el: HTMLElement, rawKey: string, value: unknown): void
     return;
   }
   if (key === "dataset" && typeof value === "object") {
+    for (const name of Object.keys(el.dataset)) delete el.dataset[name];
     for (const [name, val] of Object.entries(value)) el.dataset[name] = String(val);
     return;
   }
@@ -216,7 +217,10 @@ function classToString(value: unknown): string {
 
 function applyStyle(el: HTMLElement, value: unknown): void {
   if (typeof value === "string") el.setAttribute("style", value);
-  else if (value && typeof value === "object") Object.assign(el.style, value);
+  else if (value && typeof value === "object") {
+    el.style.cssText = "";
+    Object.assign(el.style, value);
+  }
 }
 
 export function appendChildren(el: ParentNode, children: Child[]): void {

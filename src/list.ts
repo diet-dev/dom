@@ -12,6 +12,7 @@ export class ListView<T> {
   readonly keyOf: (item: T) => string;
   readonly render: (item: Signal<T>) => Node;
   #entries: ListEntry<T>[] = [];
+  #dupesWarned = new Set<string>();
 
   constructor(source: Signal<T[]>, keyOf: (item: T) => string, render: (item: Signal<T>) => Node) {
     this.source = source;
@@ -31,9 +32,18 @@ export class ListView<T> {
     const items = this.source.value ?? [];
     const pending = new Map(this.#entries.map((e) => [e.key, e] as const));
     const next: ListEntry<T>[] = [];
+    const seen = new Set<string>();
 
     for (const item of items) {
       const key = this.keyOf(item);
+      if (seen.has(key)) {
+        if (!this.#dupesWarned.has(key)) {
+          this.#dupesWarned.add(key);
+          console.warn(`list: duplicate key "${key}" is ignored (keys must be unique)`);
+        }
+        continue;
+      }
+      seen.add(key);
       const existing = pending.get(key);
       if (existing) {
         existing.item.value = item;

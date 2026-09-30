@@ -209,4 +209,24 @@ describe("пропсы", () => {
     expect(nodeData.getAttribute("data-user-id")).toBeNull();
     expect(nodeData.getAttribute("dataset")).toBeNull();
   });
+
+  describe("Signal dataset/style заменяет состояние целиком", () => {
+    it("dataset: старые ключи стираются при новом объекте", () => {
+      const data = signal<Record<string, string> | null>({ a: "1" });
+      const node = div({ dataset: data });
+      expect(node.getAttribute("data-a")).toBe("1");
+      data.value = { b: "2" };
+      expect(node.getAttribute("data-a")).toBeNull();
+      expect(node.getAttribute("data-b")).toBe("2");
+    });
+
+    it("style: старые свойства сбрасываются при новом объекте", () => {
+      const st = signal<Partial<CSSStyleDeclaration>>({ color: "red" });
+      const node = div({ style: st });
+      expect(node.style.color).toBe("red");
+      st.value = { marginTop: "8px" };
+      expect(node.style.color).toBe("");
+      expect(node.style.marginTop).toBe("8px");
+    });
+  });
 });
