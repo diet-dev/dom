@@ -122,4 +122,21 @@ describe("controlled inputs", () => {
       expect((node as HTMLInputElement).checked).toBe(true);
     });
   });
+
+  describe("value: false — трактуется как «не задано»", () => {
+    it("поле не контролируется: ввод не сбрасывается к строке 'false'", () => {
+      const node = input({ type: "text", value: false, onChange: () => {} });
+      expect((node as HTMLInputElement).value).toBe("");
+      (node as HTMLInputElement).value = "typed";
+      node.dispatchEvent(new Event("input", { bubbles: true }));
+      expect((node as HTMLInputElement).value).toBe("typed");
+    });
+
+    it("checked: false остаётся валидным контролируемым значением", () => {
+      const node = input({ type: "checkbox", checked: false, onChange: () => {} });
+      (node as HTMLInputElement).checked = true;
+      node.dispatchEvent(new Event("change", { bubbles: true }));
+      expect((node as HTMLInputElement).checked).toBe(false);
+    });
+  });
 });

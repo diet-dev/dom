@@ -104,7 +104,7 @@ function setupControlled(el: HTMLElement, props: Props): void {
   const checked = props.checked;
   const next: ControlledState = { hasChange: props.onChange != null, warned: false };
   let tracked = false;
-  if (!(value instanceof Signal) && value != null && controlsValue(el)) {
+  if (!(value instanceof Signal) && value != null && value !== false && controlsValue(el)) {
     next.value = String(value);
     tracked = true;
   }
