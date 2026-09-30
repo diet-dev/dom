@@ -14,7 +14,7 @@ npm install @dietdev/dom
 import { div, button, signal, computed } from "@dietdev/dom";
 ```
 
-Пакет публикуется собранным: `dist/` содержит ES-модули и декларации типов. Для потребителя нужен Node.js 18+ и, если проект на TypeScript, компилятор 5.7 или новее — декларации сохраняют расширения `.ts` в относительных импортах, а разрешать их научились начиная с этой версии. Реактивность построена на [`@preact/signals-core`](https://www.npmjs.com/package/@preact/signals-core) (~2 КБ gzip), он приходит как зависимость.
+Пакет публикуется собранным: `dist/` содержит ES-модули и декларации типов. Для потребителя нужен Node.js 18+ и, если проект на TypeScript, компилятор 5.0 или новее — декларации сохраняют расширения `.ts` в относительных импортах, а резолвить их TypeScript умеет начиная с 5.0 (проверено: 5.0.4 — да, 4.9 — ошибка `TS2691`). Пакет поставляется как ESM: в бандлерах работает из коробки, в Node — через `import`, а `require("@dietdev/dom")` — только на Node с поддержкой `require(esm)` (20.19+, 22.12+), иначе `ERR_REQUIRE_ESM`. Реактивность построена на [`@preact/signals-core`](https://www.npmjs.com/package/@preact/signals-core) (~2 КБ gzip), он приходит как зависимость.
 
 ## Настройка JSX
 
@@ -38,6 +38,8 @@ import { div, button, signal, computed } from "@dietdev/dom";
 4. `Fragment` импортируется явно, из корня пакета: `import { Fragment } from "@dietdev/dom"`.
 
 Сборщикам ничего донастраивать не нужно: рантайм доступен через `exports`-подпути пакета (для Vite работает из коробки; для Vitest добавьте зеркальные `resolve.alias`, если он не читает `paths` вашего tsconfig).
+
+Для JSX нужен `moduleResolution` из `bundler`, `node16` или `nodenext`. Legacy `node10` корневой API резолвит (через `main`/`types`), но подпуть `@dietdev/dom/jsx-runtime` — нет: без `skipLibCheck: true` получите `TS2875`, а с ним JSX молча деградирует до `any`. Это ограничение TypeScript, а не библиотеки.
 
 ```tsx
 import { signal } from "@dietdev/dom";
@@ -252,6 +254,8 @@ const Counter = component(() => {
 - `onFocus`/`onBlur` не всплывают (DOM-семантика, не React).
 - `render` в `list` должен возвращать один узел.
 - Событие для `onChange` выбирается при применении пропсов: смена `type` позже (повторным `applyProps`) слушатель на другое событие не переносит.
+- JSX-подпуть не резолвится при legacy `moduleResolution: node10` (нужен `bundler`, `node16` или `nodenext`); корневой API при `node10` работает.
+- Пакет ESM-only: `require()` доступен только на Node с `require(esm)` (20.19+, 22.12+), иначе — бандлер или `import`.
 
 Частые ошибки:
 

@@ -52,7 +52,7 @@
 npm install @dietdev/dom
 ```
 
-Требования: Node.js 18+, TypeScript 5.7+ (если проект на TS).
+Требования: Node.js 18+, TypeScript 5.0+ (если проект на TS). Пакет — ESM-only: в бандлере работает из коробки, в Node — через `import` (либо `require` на Node с `require(esm)`, 20.19+/22.12+).
 
 Импорт — из корня пакета:
 
