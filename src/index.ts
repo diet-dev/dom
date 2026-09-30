@@ -9,4 +9,5 @@ export { list, ListView } from "./list.ts";
 export type { ListEntry } from "./list.ts";
 export { component } from "./component.ts";
 export type { Component } from "./component.ts";
+export { Fragment } from "./jsx-runtime.ts";
 export { signal, computed, effect, batch, untracked, Signal } from "./signals.ts";

@@ -22,10 +22,12 @@ export class ListView<T> {
   mount(parent: ParentNode): void {
     const anchor = document.createComment("list");
     parent.append(anchor);
-    bind(parent, () => this.#reconcile(parent, anchor));
+    bind(anchor, () => this.#reconcile(anchor));
   }
 
-  #reconcile(parent: ParentNode, anchor: Comment): void {
+  #reconcile(anchor: Comment): void {
+    const parent = anchor.parentNode;
+    if (!parent) return;
     const items = this.source.value ?? [];
     const pending = new Map(this.#entries.map((e) => [e.key, e] as const));
     const next: ListEntry<T>[] = [];

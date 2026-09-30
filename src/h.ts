@@ -240,17 +240,18 @@ export function appendChildren(el: ParentNode, children: Child[]): void {
 
 function bindChildSignal(parent: ParentNode, source: Signal<unknown>): void {
   const marker = document.createTextNode("");
-  let current: ChildNode = marker;
+  let current: ChildNode | null = null;
   parent.append(marker);
-  bind(parent, () => {
+  bind(marker, () => {
     const value = source.value;
-    let next: ChildNode;
-    if (value == null || value === false) next = marker;
+    let next: ChildNode | null;
+    if (value == null || value === false) next = null;
     else if (value instanceof Node) next = value as ChildNode;
     else next = document.createTextNode(String(value));
     if (next !== current) {
-      current.replaceWith(next);
+      current?.remove();
       current = next;
+      if (next) marker.parentNode?.insertBefore(next, marker);
     }
   });
 }
