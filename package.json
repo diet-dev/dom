@@ -1,6 +1,6 @@
 {
   "name": "@dietdev/dom",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Построение DOM из TypeScript: фабрики тегов, реактивность на сигналах, keyed-списки",
   "keywords": [
     "dom",

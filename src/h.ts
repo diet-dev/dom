@@ -209,7 +209,7 @@ function clearProp(el: HTMLElement, rawKey: string): void {
   el.removeAttribute(key);
 }
 
-function classToString(value: unknown): string {
+export function classToString(value: unknown): string {
   if (typeof value === "string") return value;
   if (Array.isArray(value)) return value.filter(Boolean).join(" ");
   return String(value);

@@ -1,5 +1,7 @@
 export { h, applyProps, applyProp, appendChildren } from "./h.ts";
 export type { Child, Props } from "./h.ts";
+export { SVG_NS, XLINK_NS, svg, applySvgProps, applySvgProp, svgToImage, SVG_TAGS, isSvgTag } from "./svg.ts";
+export type { SvgProps } from "./svg.ts";
 export { el, div, span, section, article, header, footer, main, nav, aside } from "./tags.ts";
 export { h1, h2, h3, h4, h5, h6, p, a, strong, em, code, pre, small, blockquote, br } from "./tags.ts";
 export { ul, ol, li, form, input, button, label, select, option, textarea } from "./tags.ts";

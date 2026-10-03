@@ -1,5 +1,7 @@
 import { appendChildren, h } from "./h.ts";
 import type { Child, Props } from "./h.ts";
+import { isSvgTag, svg } from "./svg.ts";
+import type { SvgProps } from "./svg.ts";
 import type { Component } from "./component.ts";
 
 export interface FragmentProps {
@@ -17,7 +19,7 @@ export function Fragment(props?: FragmentProps | null): DocumentFragment {
 }
 
 export namespace JSX {
-  export type Element = HTMLElement | DocumentFragment;
+  export type Element = HTMLElement | SVGElement | DocumentFragment;
   export type ElementType = string | Component<any> | typeof Fragment;
   export interface ElementChildrenAttribute {
     children: unknown;
@@ -41,6 +43,11 @@ export function jsx(tag: JSX.ElementType, props: JsxProps, _key?: string | numbe
     const render = tag as (props: unknown, ...children: Child[]) => JSX.Element;
     return render(rest, ...list);
   }
+  // SVG-теги создаются в svg-namespace: createElement рисовал бы
+  // HTMLUnknownElement, который браузер не рендерит. Поддержка минимальная
+  // (закрытый список SVG_TAGS, см. svg.ts) — неизвестные svg-теги и
+  // HTML-дети внутри <svg> так и остаются вне поддержки.
+  if (isSvgTag(tag)) return svg(tag, rest as SvgProps, ...list);
   return h(tag, rest as Props, ...list);
 }
 
