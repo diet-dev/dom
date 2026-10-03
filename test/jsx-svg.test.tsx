@@ -37,4 +37,34 @@ describe("JSX — svg", () => {
     const node = (<div />) as unknown as Element;
     expect(node.namespaceURI).toBe("http://www.w3.org/1999/xhtml");
   });
+
+  it("namespace выбирается по имени тега, не по позиции", () => {
+    const pathOutsideSvg = (<path d="M0 0" />) as unknown as Element;
+    expect(pathOutsideSvg.namespaceURI).toBe(SVG_NS);
+
+    const divInsideSvg = (
+      <svg>
+        <div />
+      </svg>
+    ) as unknown as Element;
+    const div = divInsideSvg.firstChild as Element;
+    expect(div.namespaceURI).toBe("http://www.w3.org/1999/xhtml");
+  });
+
+  it("незнакомый svg-тег попадает в HTML-namespace и не рисуется", () => {
+    const node = (<feGaussianBlur stdDeviation={2} />) as unknown as Element;
+    expect(node.namespaceURI).toBe("http://www.w3.org/1999/xhtml");
+  });
+
+  it("foreignObject — в svg-namespace, его HTML-дети — в HTML-namespace", () => {
+    const node = (
+      <foreignObject>
+        <div>текст</div>
+      </foreignObject>
+    ) as unknown as Element;
+    expect(node.namespaceURI).toBe(SVG_NS);
+    const div = node.firstChild as Element;
+    expect(div.namespaceURI).toBe("http://www.w3.org/1999/xhtml");
+    expect(div.textContent).toBe("текст");
+  });
 });

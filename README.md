@@ -240,11 +240,12 @@ const Counter = component(() => {
   ```ts
   bind(el, () => applyProp(el, "disabled", busy.value));
   ```
+- **`applySvgProps(el, props)` / `applySvgProp(el, key, value)`** — то же для svg-элементов, с svg-правилами атрибутов (kebab-case, `viewBox` без изменений, `href` как `xlink:href`); сигналы биндятся так же, как в `applyProps`.
 - **`appendChildren(parent, children)`** — смонтировать детей (строки, узлы, сигналы, `list()`-объекты, массивы) в существующий контейнер; нативный `el.append(signal)` так не умеет.
 - **`bind(node, apply)`** — повесить эффект на узел; диспозится через `unmount(node)`.
 - **`unmount(node)`** — рекурсивно диспозит эффекты поддерева и удаляет узел (см. «Очистка»).
 
-Публичные типы: `Child`, `Props`, `Signal`, `ListView`, `Component`.
+Публичные типы: `Child`, `Props`, `SvgProps`, `Signal`, `ListView`, `Component`.
 
 ## SVG
 

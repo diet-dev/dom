@@ -1,6 +1,5 @@
 import { Signal } from "@preact/signals-core";
-import { bind } from "./bind.ts";
-import { appendChildren, classToString, domEventName, PROP_NAMES } from "./h.ts";
+import { appendChildren, applyEntries, applyStyle, classToString, domEventName, PROP_NAMES } from "./h.ts";
 import type { Child } from "./h.ts";
 
 export const SVG_NS = "http://www.w3.org/2000/svg";
@@ -12,9 +11,9 @@ export const XLINK_NS = "http://www.w3.org/1999/xlink";
  */
 export type SvgProps = {
   [key: string]: unknown;
-  class?: string | false | (string | false | null | undefined)[];
-  className?: string | false | (string | false | null | undefined)[];
-  style?: string | Partial<CSSStyleDeclaration>;
+  class?: string | false | (string | false | null | undefined)[] | Signal<string | null>;
+  className?: string | false | (string | false | null | undefined)[] | Signal<string | null>;
+  style?: string | Partial<CSSStyleDeclaration> | Signal<string | Partial<CSSStyleDeclaration> | null>;
 } & { [K in `on${string}`]?: EventListener | false };
 
 // Атрибуты, у которых camelCase — родное имя, а не сокращение kebab-case
@@ -28,10 +27,7 @@ export function svg(tag: string, props?: SvgProps | null, ...children: Child[]):
 }
 
 export function applySvgProps(el: SVGElement, props: SvgProps): void {
-  for (const [key, value] of Object.entries(props)) {
-    if (value instanceof Signal) bind(el, () => applySvgProp(el, key, value.value));
-    else if (value != null) applySvgProp(el, key, value);
-  }
+  applyEntries(el, Object.entries(props), (key, value) => applySvgProp(el, key, value));
 }
 
 export function applySvgProp(el: SVGElement, rawKey: string, value: unknown): void {
@@ -57,11 +53,7 @@ export function applySvgProp(el: SVGElement, rawKey: string, value: unknown): vo
   // className у SVGElement — readonly SVGAnimatedString, поэтому class всегда
   // идёт через setAttribute
   if (key === "style") {
-    if (typeof value === "string") el.setAttribute("style", value);
-    else if (value && typeof value === "object") {
-      el.style.cssText = "";
-      Object.assign(el.style, value);
-    }
+    applyStyle(el, value);
     return;
   }
   el.setAttribute(key, String(value));
@@ -88,7 +80,7 @@ const imageCache = new WeakMap<SVGElement, Map<string, Promise<HTMLImageElement>
  * (битая разметка, ошибка загрузки) — вызывающий сам решает, критично ли это.
  */
 export function svgToImage(source: SVGElement | string, fill?: string): Promise<HTMLImageElement> {
-  if (typeof source === "string") return rasterize(source, fill);
+  if (typeof source === "string") return rasterize(source);
 
   let byFill = imageCache.get(source);
   if (!byFill) imageCache.set(source, (byFill = new Map()));
@@ -97,12 +89,12 @@ export function svgToImage(source: SVGElement | string, fill?: string): Promise<
   if (!promise) {
     const clone = source.cloneNode(true) as SVGElement;
     if (fill) clone.setAttribute("fill", fill);
-    byFill.set(key, (promise = rasterize(new XMLSerializer().serializeToString(clone), fill)));
+    byFill.set(key, (promise = rasterize(new XMLSerializer().serializeToString(clone))));
   }
   return promise;
 }
 
-function rasterize(markup: string, fill?: string): Promise<HTMLImageElement> {
+function rasterize(markup: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     try {
       const blob = new Blob([markup], { type: "image/svg+xml;charset=utf-8" });

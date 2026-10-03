@@ -69,14 +69,22 @@ export function h(tag: string, props?: Props | null, ...children: Child[]): HTML
   return el;
 }
 
+export function applyEntries(
+  el: Element,
+  entries: [string, unknown][],
+  apply: (key: string, value: unknown) => void,
+): void {
+  for (const [key, value] of entries) {
+    if (value instanceof Signal) bind(el, () => apply(key, value.value));
+    else if (value != null) apply(key, value);
+  }
+}
+
 export function applyProps(el: HTMLElement, props: Props): void {
   const entries = Object.entries(props);
   const typeIndex = entries.findIndex(([key]) => key === "type");
   if (typeIndex > 0) entries.unshift(...entries.splice(typeIndex, 1));
-  for (const [key, value] of entries) {
-    if (value instanceof Signal) bind(el, () => applyProp(el, key, value.value));
-    else if (value != null) applyProp(el, key, value);
-  }
+  applyEntries(el, entries, (key, value) => applyProp(el, key, value));
   setupControlled(el, props);
 }
 
@@ -214,7 +222,7 @@ export function classToString(value: unknown): string {
   return String(value);
 }
 
-function applyStyle(el: HTMLElement, value: unknown): void {
+export function applyStyle(el: HTMLElement | SVGElement, value: unknown): void {
   if (typeof value === "string") el.setAttribute("style", value);
   else if (value && typeof value === "object") {
     el.style.cssText = "";
