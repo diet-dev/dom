@@ -1,5 +1,6 @@
 import { computed, list, signal } from "../../src/index.ts";
 import { Autocomplete } from "../autocomplete.tsx";
+import { Icon } from "../icons.tsx";
 
 interface Todo {
   id: number;
@@ -41,7 +42,10 @@ export const todosTab = (
         placeholder="Новая задача — клик по подсказке подставит значение"
         onsubmit={submit}
       />
-      <button onClick={submit}>Добавить</button>
+      <button onClick={submit}>
+        <Icon name="plus" size={16} />
+        Добавить
+      </button>
     </div>
     <ul class="todos">
       {list(
@@ -50,8 +54,8 @@ export const todosTab = (
         (t) => (
           <li>
             <span>{computed(() => t.value.text)}</span>
-            <button class="remove" onClick={() => removeTodo(t.value.id)}>
-              ×
+            <button class="remove" onClick={() => removeTodo(t.value.id)} aria-label="Удалить">
+              <Icon name="trash" size={16} />
             </button>
           </li>
         ),

@@ -1,9 +1,10 @@
 import "./style.css";
+import type { TabItem } from "./tabs/index.ts";
 import { Tabs, counterTab, todosTab } from "./tabs/index.ts";
 
-const demoTabs = [
-  { id: "counter", label: "Счётчик", content: counterTab },
-  { id: "todos", label: "Задачи", content: todosTab },
+const demoTabs: TabItem[] = [
+  { id: "counter", label: "Счётчик", icon: "hash", content: counterTab },
+  { id: "todos", label: "Задачи", icon: "list", content: todosTab },
 ];
 
 const app = (

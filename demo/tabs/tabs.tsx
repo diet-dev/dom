@@ -1,10 +1,13 @@
 import "./tabs.css";
 import { component, computed, signal } from "../../src/index.ts";
 import type { Child, Signal } from "../../src/index.ts";
+import type { IconName } from "../icons.tsx";
+import { Icon } from "../icons.tsx";
 
 export interface TabItem {
   id: string;
   label: string;
+  icon?: IconName;
   content: Child;
 }
 
@@ -26,7 +29,14 @@ export const Tabs = component((props: TabsProps) => {
               active.value = tab.id;
             }}
           >
-            {tab.label}
+            {tab.icon ? (
+              <>
+                <Icon name={tab.icon} size={16} />
+                {tab.label}
+              </>
+            ) : (
+              tab.label
+            )}
           </button>
         ))}
       </div>
