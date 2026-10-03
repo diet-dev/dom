@@ -5,6 +5,7 @@ const path = (p: string) => fileURLToPath(new URL(p, import.meta.url));
 
 export default defineConfig({
   root: "demo",
+  base: "./",
   resolve: {
     alias: [
       { find: /^@dietdev\/dom\/jsx-dev-runtime$/, replacement: path("src/jsx-dev-runtime.ts") },
