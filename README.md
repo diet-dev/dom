@@ -248,7 +248,7 @@ const Counter = component(() => {
 
 ## SVG
 
-- **`svg(tag, props?, ...children)`** — создать SVG-элемент через `createElementNS` (html-фабрики создают узлы в HTML-namespace, которые браузер как графику не рендерит). Пропсы — `SvgProps`: события `on*`, сигналы и `bind`/`unmount` работают так же, как в `h()`; `class` идёт через `setAttribute` (у SVG `className` readonly); camelCase переводится в kebab-case (`strokeWidth` → `stroke-width`), кроме `viewBox`/`preserveAspectRatio`; `href` ставится как `xlink:href` для старых WebKit:
+- **`svg(tag, props?, ...children)`** — создать SVG-элемент через `createElementNS` (html-фабрики создают узлы в HTML-namespace, которые браузер как графику не рендерит). Пропсы — `SvgProps`: события `on*`, сигналы и `bind`/`unmount` работают так же, как в `h()`; `class` идёт через `setAttribute` (у SVG `className` readonly); camelCase переводится в kebab-case (`strokeWidth` → `stroke-width`), кроме `viewBox`/`preserveAspectRatio`/`viewTarget`; `href` ставится как `xlink:href` для старых WebKit:
   ```ts
   const icon = svg("svg", { viewBox: "0 0 24 24", class: "icon" }, svg("path", { d: "M3 12h18", strokeWidth: 2 }));
   ```
@@ -270,8 +270,9 @@ const icon = (
 Поддержка **минимальная**, и это стоит держать в голове:
 
 - список тегов закрытый. Незнакомый тег (`feGaussianBlur`, `animate`, что-то из будущих стандартов) будет создан в HTML-namespace и не отрисуется — такие узлы собирайте `svg()` и вставляйте готовым элементом;
-- namespace не наследуется позицией (в отличие от React): HTML-элемент внутри `<svg>` (`<svg><div>`) будет создан в svg-namespace и браузер его не нарисует, и наоборот — `<path>` вне `<svg>` останется HTML-узлом;
-- `<foreignObject>` создаётся корректно, но его HTML-дети — нет: собирайте такое поддерево вручную через `svg()`;
+- namespace выбирается по имени тега, а не по позиции (в отличие от React, где он наследуется от родителя): `<div>` внутри `<svg>` создастся в HTML-namespace и браузер его в графике не нарисует, `<path>` вне `<svg>` — в svg-namespace, и без viewport он невидим;
+- camelCase-атрибуты, кроме трёх исключений выше, через пропсы не ставятся: `stdDeviation`, `numOctaves`, `baseFrequency` и т.п. превратятся в несуществующий `std-deviation` — ставьте их вручную через `setAttribute`;
+- `<foreignObject>` из списка: сам создаётся в svg-namespace, его HTML-дети — в HTML-namespace, простое поддерево рендерится;
 - атрибуты svg-тегов типизируются общим `SvgProps`, опечатку в `strokeWidth` компилятор не поймает.
 
 ## Ограничения
