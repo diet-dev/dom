@@ -1,6 +1,6 @@
 import { Signal } from "@preact/signals-core";
 import { bind } from "./bind.ts";
-import { appendChildren, classToString } from "./h.ts";
+import { appendChildren, classToString, domEventName, PROP_NAMES } from "./h.ts";
 import type { Child } from "./h.ts";
 
 export const SVG_NS = "http://www.w3.org/2000/svg";
@@ -20,12 +20,6 @@ export type SvgProps = {
 // Атрибуты, у которых camelCase — родное имя, а не сокращение kebab-case
 const KEEP_AS_IS = new Set(["viewBox", "preserveAspectRatio", "viewTarget"]);
 
-// xlink:href исторически нужен старым WebKit/Safari (до Safari 12.1 svg2-href
-// не понимают); современный browsers понимают и то и другое
-const PROP_NAMES: Record<string, string> = {
-  className: "class",
-};
-
 export function svg(tag: string, props?: SvgProps | null, ...children: Child[]): SVGElement {
   const el = document.createElementNS(SVG_NS, tag);
   appendChildren(el, children);
@@ -42,7 +36,7 @@ export function applySvgProps(el: SVGElement, props: SvgProps): void {
 
 export function applySvgProp(el: SVGElement, rawKey: string, value: unknown): void {
   if (rawKey.startsWith("on")) {
-    if (typeof value === "function") el.addEventListener(rawKey.slice(2).toLowerCase(), value as EventListener);
+    if (typeof value === "function") el.addEventListener(domEventName(el, rawKey), value as EventListener);
     return;
   }
   if (value == null || value === false) {
@@ -50,6 +44,8 @@ export function applySvgProp(el: SVGElement, rawKey: string, value: unknown): vo
     return;
   }
   const key = propName(rawKey);
+  // xlink:href исторически нужен старым WebKit/Safari (до Safari 12.1 svg2-href
+  // не понимают); современные браузеры понимают и то и другое
   if (key === "href" || key === "xlink:href") {
     el.setAttributeNS(XLINK_NS, "href", String(value));
     return;

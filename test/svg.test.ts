@@ -61,6 +61,17 @@ describe("svg — фабрика", () => {
     expect(clicked).toEqual(["x"]);
   });
 
+  it("имена событий совпадают с h(): onDoubleClick -> dblclick, onChange -> change", () => {
+    const events: string[] = [];
+    const node = svg("rect", {
+      onDoubleClick: () => events.push("dblclick"),
+      onChange: () => events.push("change"),
+    });
+    node.dispatchEvent(new MouseEvent("dblclick"));
+    node.dispatchEvent(new Event("change"));
+    expect(events).toEqual(["dblclick", "change"]);
+  });
+
   it("сигнальный пропс обновляется и диспозится через unmount", () => {
     const width = signal(2);
     const node = svg("line", { strokeWidth: width });

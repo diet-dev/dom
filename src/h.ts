@@ -15,7 +15,7 @@ export type Props = {
   ref?: ((el: HTMLElement) => void) | { current: HTMLElement | null };
 } & { [K in `on${string}`]?: EventListener | false };
 
-const PROP_NAMES: Record<string, string> = {
+export const PROP_NAMES: Record<string, string> = {
   className: "class",
   htmlFor: "for",
   autoFocus: "autofocus",
@@ -26,7 +26,6 @@ const EVENT_NAMES: Record<string, string> = {
 };
 
 const CHANGE_AS_INPUT_TYPES = new Set(["checkbox", "radio", "file"]);
-
 type ControlledState = {
   value?: string;
   checked?: boolean;
@@ -52,7 +51,7 @@ function normalizeKey(key: string): string | null {
   return PROP_NAMES[key] ?? key;
 }
 
-function domEventName(el: HTMLElement, key: string): string {
+export function domEventName(el: Element, key: string): string {
   if (key === "onChange") {
     if (el.tagName === "INPUT" && !CHANGE_AS_INPUT_TYPES.has(inputType(el))) {
       return "input";
@@ -85,7 +84,7 @@ function isFormControlled(el: HTMLElement): boolean {
   return el.tagName === "INPUT" || el.tagName === "TEXTAREA" || el.tagName === "SELECT";
 }
 
-function inputType(el: HTMLElement): string {
+function inputType(el: Element): string {
   return el.getAttribute("type") ?? "";
 }
 
