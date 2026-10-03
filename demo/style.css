@@ -129,3 +129,42 @@ ul.todos li {
   border-radius: 8px;
   padding: 0.4rem 0.4rem 0.4rem 0.75rem;
 }
+
+svg.gauge {
+  width: 100%;
+  display: block;
+}
+
+.gauge-track {
+  fill: #1e293b;
+  stroke: #334155;
+}
+
+.gauge-ok {
+  fill: #4ade80;
+}
+
+.gauge-warn {
+  fill: #facc15;
+}
+
+.gauge-over {
+  fill: #f87171;
+}
+
+.gauge-label {
+  fill: #94a3b8;
+  font-size: 8px;
+  font-variant-numeric: tabular-nums;
+}
+
+input[type="range"] {
+  padding: 0.5rem 0;
+  border: 0;
+  background: transparent;
+  accent-color: #3b82f6;
+}
+
+input[type="range"]:focus {
+  outline: none;
+}
